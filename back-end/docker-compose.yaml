@@ -25,6 +25,34 @@ services:
     volumes:
       - redis-data:/data
 
+  movieapp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: movieapp_backend
+    depends_on:
+      - postgres
+      - redis
+    ports:
+       - "9000:3000"
+    volumes:
+      - ./uploads:/app/uploads
+    env_file:
+      - .env
+    restart: unless-stopped
+
+  migrate:
+    image: migrate/migrate
+    depends_on:
+      - postgres
+    volumes:
+      - ./database/migrations:/migrations
+    command: [
+      "-path", "/migrations",
+      "-database", "postgres://postgres:adminrino@postgres:5432/movie-app-go?sslmode=disable",
+      "up"
+    ]
+
 volumes:
   pgdata: {}
   redis-data: {}
