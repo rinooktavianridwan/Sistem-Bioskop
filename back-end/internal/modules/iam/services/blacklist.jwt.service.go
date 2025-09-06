@@ -3,7 +3,6 @@ package services
 import (
     "context"
     "os"
-    "strconv"
     "time"
 
     "github.com/redis/go-redis/v9"
@@ -12,14 +11,11 @@ import (
 var RedisClient *redis.Client
 
 func InitRedis() {
-    addr := os.Getenv("REDIS_HOST")
+    addr := os.Getenv("REDIS_ADDR")
     if addr == "" {
         addr = "localhost:6379"
     }
     db := 0
-    if dbStr := os.Getenv("REDIS_DB"); dbStr != "" {
-        db, _ = strconv.Atoi(dbStr)
-    }
     RedisClient = redis.NewClient(&redis.Options{
         Addr: addr,
         DB:   db,
