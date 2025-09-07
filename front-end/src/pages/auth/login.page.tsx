@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../../contexts/useAuth.hook';
 import { Film, Mail, Lock, AlertCircle } from 'lucide-react';
 
 const Login: React.FC = () => {
@@ -19,8 +19,9 @@ const Login: React.FC = () => {
     try {
       await login(email, password);
       navigate('/');
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      if (err instanceof Error) setError(err.message);
+      else setError('Login failed');
     } finally {
       setIsLoading(false);
     }

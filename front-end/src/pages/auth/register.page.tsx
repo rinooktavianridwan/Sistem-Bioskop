@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../../contexts/useAuth.hook';
 import { Film, Mail, Lock, User, Phone, AlertCircle, CheckCircle } from 'lucide-react';
 
 const Register: React.FC = () => {
@@ -41,8 +41,9 @@ const Register: React.FC = () => {
       setTimeout(() => {
         navigate('/login');
       }, 2000);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      if (err instanceof Error) setError(err.message);
+      else setError('Registration failed');
     } finally {
       setIsLoading(false);
     }

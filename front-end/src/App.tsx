@@ -1,18 +1,19 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from './contexts/AuthContext';
-import Layout from './components/Layout';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import Home from './pages/Home';
-import Movies from './pages/Movies';
-import Schedules from './pages/Schedules';
-import Profile from './pages/Profile';
-import Orders from './pages/Orders';
+import { AuthProvider } from './contexts/auth.provider';
+import { useAuth } from './contexts/useAuth.hook';
+import Layout from './components/layout.component';
+import Login from './pages/auth/login.page';
+import Register from './pages/auth/register.page';
+import Home from './pages/home.page';
+import Movies from './pages/movie/movie.page';
+import Schedules from './pages/schedule/schedule.page';
+import Profile from './pages/user/profile.page';
+import Orders from './pages/orders/order.page';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode; adminOnly?: boolean }> = ({ 
   children, 
-  adminOnly = false 
+  adminOnly = false
 }) => {
   const { user, isLoading } = useAuth();
 

@@ -5,6 +5,8 @@ import (
 	"movie-app-go/database"
 	"movie-app-go/internal/jobs"
 
+	"github.com/gin-contrib/cors"
+
 	"movie-app-go/database/seed"
 	"movie-app-go/internal/modules/genre"
 	"movie-app-go/internal/modules/iam"
@@ -67,6 +69,14 @@ func main() {
 
 	// Setup Gin
 	r := gin.Default()
+
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:5173"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+	}))
 
 	r.Static("/uploads", "./uploads")
 

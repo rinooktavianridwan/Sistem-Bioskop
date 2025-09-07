@@ -1,34 +1,42 @@
-import axios from 'axios';
+import axios, { AxiosHeaders, type InternalAxiosRequestConfig, type AxiosResponse, type AxiosError } from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+const rawUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+const API_BASE_URL = rawUrl.endsWith('/api') ? rawUrl : `${rawUrl}/api`;
 
-export const api = axios.create({
+export const axiosInstance = axios.create({
   baseURL: API_BASE_URL,
-  headers: {
+  headers: new AxiosHeaders({
     'Content-Type': 'application/json',
+  }),
+});
+
+// Interceptors
+axiosInstance.interceptors.request.use(
+  (config: InternalAxiosRequestConfig) => {
+    const token = sessionStorage.getItem('token');
+    if (token) {
+      config.headers = config.headers || new AxiosHeaders();
+      config.headers.set('Authorization', `Bearer ${token}`);
+    }
+    return config;
   },
-});
-
-// Add auth token to requests
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+  (error: AxiosError) => {
+    return Promise.reject(error);
   }
-  return config;
-});
+);
 
-// Handle auth errors
-api.interceptors.response.use(
-  (response) => response,
-  (error) => {
+axiosInstance.interceptors.response.use(
+  async (response: AxiosResponse) => {
+    return response;
+  },
+  async (error: AxiosError) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
+      sessionStorage.removeItem('token');
+      sessionStorage.removeItem('user');
       window.location.href = '/login';
     }
     return Promise.reject(error);
   }
 );
 
-export default api;
+export default axiosInstance;
