@@ -5,45 +5,35 @@ export interface User {
   phone: string;
   role: 'admin' | 'user';
   avatar?: string;
-  created_at: string;
-  updated_at: string;
 }
 
 export interface Movie {
   id: number;
   title: string;
-  description: string;
+  overview: string;
   duration: number;
   release_date: string;
-  poster?: string;
+  poster_url?: string;
   genre_ids: number[];
   genres?: Genre[];
-  created_at: string;
-  updated_at: string;
 }
 
 export interface Genre {
   id: number;
   name: string;
-  created_at: string;
-  updated_at: string;
 }
 
 export interface Studio {
   id: number;
   name: string;
-  capacity: number;
+  seat_capacity: number;
   facilities?: Facility[];
-  created_at: string;
-  updated_at: string;
 }
 
 export interface Facility {
   id: number;
   name: string;
   icon?: string;
-  created_at: string;
-  updated_at: string;
 }
 
 export interface Schedule {
@@ -55,8 +45,6 @@ export interface Schedule {
   price: number;
   movie?: Movie;
   studio?: Studio;
-  created_at: string;
-  updated_at: string;
 }
 
 export interface Order {
@@ -68,8 +56,6 @@ export interface Order {
   status: 'pending' | 'paid' | 'cancelled';
   user?: User;
   schedule?: Schedule;
-  created_at: string;
-  updated_at: string;
 }
 
 export interface Promo {
@@ -82,8 +68,6 @@ export interface Promo {
   start_date: string;
   end_date: string;
   is_active: boolean;
-  created_at: string;
-  updated_at: string;
 }
 
 export interface ApiResponse<T> {

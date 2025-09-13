@@ -7,9 +7,20 @@ import Login from './pages/auth/login.page';
 import Register from './pages/auth/register.page';
 import Home from './pages/home.page';
 import Movies from './pages/movie/movie.page';
+import MovieDetail from './pages/movie/movie.detail.page';
 import Schedules from './pages/schedule/schedule.page';
+import ScheduleDetail from './pages/schedule/schedule.detail.page';
+import OrderNewPage from './pages/orders/order.page';
 import Profile from './pages/user/profile.page';
-import Orders from './pages/orders/order.page';
+import OrderCheckoutPage from './pages/orders/order.checkout.page';
+import MyOrdersPage from './pages/orders/myorder.page';
+import MyOrderDetailPage from './pages/orders/myorder.detail.page';
+import AdminLayout from './pages/admin/admin.layout.page';
+import FacilitiesPage from './pages/admin/master/facilities.page';
+import GenresPage from './pages/admin/master/genres.page';
+import MoviesAdminPage from './pages/admin/movies.page';
+import PromosAdminPage from './pages/admin/promos.page';
+import SchedulesAdminPage from './pages/admin/schedules.page';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode; adminOnly?: boolean }> = ({ 
   children, 
@@ -47,19 +58,37 @@ const AppRoutes: React.FC = () => {
       <Route path="/" element={<Layout />}>
         <Route index element={<Home />} />
         <Route path="movies" element={<Movies />} />
+        <Route path="movies/:id" element={<MovieDetail />} />
         <Route path="schedules" element={<Schedules />} />
-        
+        <Route path="schedule/detail" element={<ScheduleDetail />} />
+
+        <Route path="orders/new" element={<OrderNewPage />} />
+        <Route path="orders/checkout" element={<OrderCheckoutPage />} />
+        <Route path="orders" element={<MyOrdersPage />} />
+        <Route path="orders/:id" element={<MyOrderDetailPage />} />
+
+
         <Route path="profile" element={
           <ProtectedRoute>
             <Profile />
           </ProtectedRoute>
         } />
+
+        <Route path="admin" element={
+        <ProtectedRoute adminOnly>
+          <AdminLayout />
+        </ProtectedRoute>
+      }>
+        <Route index element={<FacilitiesPage />} />
+        <Route path="master">
+          <Route path="facilities" element={<FacilitiesPage />} />
+          <Route path="genres" element={<GenresPage />} />
+        </Route>
+        <Route path="movies" element={<MoviesAdminPage />} />
+        <Route path="promos" element={<PromosAdminPage />} />
+        <Route path="schedules" element={<SchedulesAdminPage />} />
+      </Route>
         
-        <Route path="orders" element={
-          <ProtectedRoute>
-            <Orders />
-          </ProtectedRoute>
-        } />
       </Route>
     </Routes>
   );

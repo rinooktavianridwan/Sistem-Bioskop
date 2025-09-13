@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/useAuth.hook';
-import { Film, Mail, Lock, User, Phone, AlertCircle, CheckCircle } from 'lucide-react';
+import { Film, Mail, Lock, User, AlertCircle, CheckCircle } from 'lucide-react';
 
 const Register: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -9,7 +9,6 @@ const Register: React.FC = () => {
     email: '',
     password: '',
     confirmPassword: '',
-    phone: '',
   });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
@@ -36,7 +35,7 @@ const Register: React.FC = () => {
     }
 
     try {
-      await register(formData.name, formData.email, formData.password, formData.phone);
+      await register(formData.name, formData.email, formData.password);
       setSuccess(true);
       setTimeout(() => {
         navigate('/login');
@@ -127,27 +126,6 @@ const Register: React.FC = () => {
                   onChange={handleChange}
                   className="input-field pl-10"
                   placeholder="Enter your email"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="phone" className="block text-sm font-medium text-gray-300 mb-1">
-                Phone Number
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Phone className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  id="phone"
-                  name="phone"
-                  type="tel"
-                  required
-                  value={formData.phone}
-                  onChange={handleChange}
-                  className="input-field pl-10"
-                  placeholder="Enter your phone number"
                 />
               </div>
             </div>
