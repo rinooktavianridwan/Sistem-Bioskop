@@ -20,6 +20,36 @@ body {
   background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
 }
 
+.modal-body {
+  @apply max-h-[60vh] overflow-y-auto pr-3;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.12) transparent;
+}
+
+/* WebKit / Blink */
+.modal-body::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+.modal-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+.modal-body::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.08);
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+.modal-body::-webkit-scrollbar-button {
+  display: none; /* hide arrow buttons */
+  width: 0;
+  height: 0;
+}
+/* optional: remove corner */
+.modal-body::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
 .btn-primary {
   @apply bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200;
 }

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axiosInstance from "../../config/api.config";
 import type { Schedule } from "../../types/model.type";
-import Modal from "../../components/modal.component"; 
+import Modal from "../../components/modal.component";
 
 const SchedulesAdminPage: React.FC = () => {
   const [items, setItems] = useState<Schedule[]>([]);
@@ -24,9 +24,18 @@ const SchedulesAdminPage: React.FC = () => {
   const [editing, setEditing] = useState<Schedule | null>(null);
   const [movieId, setMovieId] = useState<number | "">("");
   const [studioSelId, setStudioSelId] = useState<number | "">("");
+  const [scheduleDate, setScheduleDate] = useState("");
   const [startTime, setStartTime] = useState("");
-  const [endTime, setEndTime] = useState("");
   const [price, setPrice] = useState<number>(75000);
+
+  const resetForm = () => {
+    setEditing(null);
+    setMovieId("");
+    setStudioSelId("");
+    setScheduleDate("");
+    setStartTime("");
+    setPrice(75000);
+  };
 
   const fetchList = async () => {
     setLoading(true);
@@ -88,17 +97,11 @@ const SchedulesAdminPage: React.FC = () => {
   useEffect(() => {
     fetchStudios();
     fetchMovies();
-    // initial list
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const openCreate = () => {
-    setEditing(null);
-    setMovieId("");
-    setStudioSelId("");
-    setStartTime("");
-    setEndTime("");
-    setPrice(75000);
+    resetForm();
+    setScheduleDate(new Date().toISOString().slice(0, 10));
     setShowModal(true);
   };
 
@@ -106,21 +109,48 @@ const SchedulesAdminPage: React.FC = () => {
     setEditing(s);
     setMovieId(s.movie_id);
     setStudioSelId(s.studio_id);
-    setStartTime(s.start_time.slice(0, 16)); // ISO local
-    setEndTime(s.end_time.slice(0, 16));
+    const st = s.start_time ?? "";
+    if (st) {
+      const dt = new Date(st);
+      const localDate = `${dt.getFullYear()}-${String(
+        dt.getMonth() + 1
+      ).padStart(2, "0")}-${String(dt.getDate()).padStart(2, "0")}`;
+      const localTime = `${String(dt.getHours()).padStart(2, "0")}:${String(
+        dt.getMinutes()
+      ).padStart(2, "0")}`;
+      setScheduleDate(localDate);
+      setStartTime(localTime);
+    } else {
+      setScheduleDate("");
+      setStartTime("");
+    }
     setPrice(s.price ?? 0);
     setShowModal(true);
   };
 
   const submit = async () => {
     try {
+      if (!movieId || movieId === "" || !studioSelId || studioSelId === "") {
+        alert("Please select movie and studio");
+        return;
+      }
+      if (!scheduleDate || !startTime) {
+        alert("Please set date and start time");
+        return;
+      }
+
+      const localStart = `${scheduleDate}T${startTime}:00`;
+      const startIso = new Date(localStart).toISOString();
+      const d = new Date(scheduleDate);
+      d.setUTCHours(0, 0, 0, 0);
+      const dateStr = d.toISOString();
+
       const payload = {
         movie_id: Number(movieId),
         studio_id: Number(studioSelId),
-        start_time: startTime,
-        end_time: endTime,
-        date: startTime ? startTime.slice(0, 10) : undefined,
-        price,
+        start_time: startIso,
+        date: dateStr,
+        price: Number(price),
       };
       if (editing) {
         await axiosInstance.put(`/schedules/${editing.id}`, payload);
@@ -128,6 +158,7 @@ const SchedulesAdminPage: React.FC = () => {
         await axiosInstance.post("/schedules", payload);
       }
       setShowModal(false);
+      resetForm();
       fetchList();
     } catch (err) {
       console.error(err);
@@ -293,7 +324,11 @@ const SchedulesAdminPage: React.FC = () => {
       <Modal
         open={showModal}
         title={editing ? "Edit Schedule" : "Create Schedule"}
-        onCancel={() => setShowModal(false)}
+        onCancel={() => {
+          setShowModal(false);
+          resetForm();
+        }}
+        centerTitle={true}
         onConfirm={submit}
       >
         <div className="space-y-3">
@@ -303,7 +338,7 @@ const SchedulesAdminPage: React.FC = () => {
             onChange={(e) =>
               setMovieId(e.target.value === "" ? "" : Number(e.target.value))
             }
-            className="w-full bg-gray-800 text-white px-3 py-2 rounded"
+            className="input-field w-full"
           >
             <option value="">Select movie</option>
             {movies.map((m) => (
@@ -321,7 +356,7 @@ const SchedulesAdminPage: React.FC = () => {
                 e.target.value === "" ? "" : Number(e.target.value)
               )
             }
-            className="w-full bg-gray-800 text-white px-3 py-2 rounded"
+            className="input-field w-full"
           >
             <option value="">Select studio</option>
             {studios.map((s) => (
@@ -331,26 +366,33 @@ const SchedulesAdminPage: React.FC = () => {
             ))}
           </select>
 
-          <label className="text-sm text-gray-300">Start (ISO)</label>
-          <input
-            type="datetime-local"
-            value={startTime}
-            onChange={(e) => setStartTime(e.target.value)}
-            className="w-full bg-gray-800 text-white px-3 py-2 rounded"
-          />
-          <label className="text-sm text-gray-300">End (ISO)</label>
-          <input
-            type="datetime-local"
-            value={endTime}
-            onChange={(e) => setEndTime(e.target.value)}
-            className="w-full bg-gray-800 text-white px-3 py-2 rounded"
-          />
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-sm text-gray-300">Date</label>
+              <input
+                type="date"
+                value={scheduleDate}
+                onChange={(e) => setScheduleDate(e.target.value)}
+                className="input-field w-full"
+              />
+            </div>
+
+            <div>
+              <label className="text-sm text-gray-300">Start time</label>
+              <input
+                type="time"
+                value={startTime}
+                onChange={(e) => setStartTime(e.target.value)}
+                className="input-field w-full"
+              />
+            </div>
+          </div>
           <label className="text-sm text-gray-300">Price</label>
           <input
             type="number"
             value={price}
             onChange={(e) => setPrice(Number(e.target.value))}
-            className="w-40 bg-gray-800 text-white px-3 py-2 rounded"
+            className="input-field w-40"
           />
         </div>
       </Modal>

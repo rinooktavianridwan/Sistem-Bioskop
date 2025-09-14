@@ -24,6 +24,32 @@ const PromosAdminPage: React.FC = () => {
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
   const [isActive, setIsActive] = useState(true);
+  const [description, setDescription] = useState("");
+  const [discountType, setDiscountType] = useState<
+    "percentage" | "fixed_amount"
+  >("percentage");
+  const [discountValue, setDiscountValue] = useState<number | "">(0);
+  const [minTickets, setMinTickets] = useState<number>(1);
+  const [maxDiscount, setMaxDiscount] = useState<number | null>(0);
+  const [usageLimit, setUsageLimit] = useState<number | null>(null);
+  const [validFrom, setValidFrom] = useState<string>("");
+  const [validUntil, setValidUntil] = useState<string>("");
+  const [movieIdsStr, setMovieIdsStr] = useState<string>("");
+
+  const resetForm = () => {
+    setName("");
+    setCode("");
+    setIsActive(true);
+    setDescription("");
+    setDiscountType("percentage");
+    setDiscountValue("");
+    setMinTickets(1);
+    setMaxDiscount("");
+    setValidFrom("");
+    setValidUntil("");
+    setMovieIdsStr("");
+    setEditing(null);
+  };
 
   const fetchList = async () => {
     setLoading(true);
@@ -51,30 +77,73 @@ const PromosAdminPage: React.FC = () => {
   }, [page, perPage]);
 
   const openCreate = () => {
-    setEditing(null);
-    setName("");
-    setCode("");
-    setIsActive(true);
+    resetForm();
     setShowModal(true);
   };
 
   const openEdit = (p: Promo) => {
     setEditing(p);
+    // populate available fields if provided by API (safe any-cast)
+    const anyP = p as any;
     setName(p.name);
     setCode(p.code);
     setIsActive(p.is_active);
+    setDescription(anyP.description ?? "");
+    setDiscountType(anyP.discount_type ?? "percentage");
+    setDiscountValue(
+      anyP.discount_value !== undefined && anyP.discount_value !== null
+        ? String(anyP.discount_value)
+        : ""
+    );
+    setMinTickets(anyP.min_tickets ?? 1);
+    setMaxDiscount(
+      anyP.max_discount !== undefined && anyP.max_discount !== null
+        ? String(anyP.max_discount)
+        : ""
+    );
+    setValidFrom(anyP.valid_from ? String(anyP.valid_from).slice(0, 16) : "");
+    setValidUntil(
+      anyP.valid_until ? String(anyP.valid_until).slice(0, 16) : ""
+    );
+    setMovieIdsStr((anyP.movie_ids || []).join(","));
     setShowModal(true);
   };
 
   const submit = async () => {
     try {
-      const payload = { name, code, is_active: isActive };
+      const payload: Record<string, unknown> = {
+        name,
+        code,
+        description: description || undefined,
+        discount_type: discountType,
+        discount_value: Number(discountValue) || 0,
+        min_tickets: Number(minTickets) || 0,
+        max_discount:
+          discountType === "fixed_amount"
+            ? null
+            : maxDiscount === ""
+            ? undefined
+            : Number(maxDiscount),
+        usage_limit: usageLimit ?? undefined,
+        is_active: isActive,
+      };
+
+      if (validFrom) payload.valid_from = new Date(validFrom).toISOString();
+      if (validUntil) payload.valid_until = new Date(validUntil).toISOString();
+
+      const mids = movieIdsStr
+        .split(",")
+        .map((s) => Number(s.trim()))
+        .filter((n) => !isNaN(n) && n > 0);
+      if (mids.length) payload.movie_ids = mids;
+
       if (editing) {
         await axiosInstance.put(`/promos/${editing.id}`, payload);
       } else {
         await axiosInstance.post("/promos", payload);
       }
       setShowModal(false);
+      resetForm();
       fetchList();
     } catch (err) {
       console.error(err);
@@ -188,22 +257,130 @@ const PromosAdminPage: React.FC = () => {
       <Modal
         open={showModal}
         title={editing ? "Edit Promo" : "Create Promo"}
-        onCancel={() => setShowModal(false)}
+        onCancel={() => {
+          setShowModal(false);
+          resetForm();
+        }}
         onConfirm={submit}
+        centerTitle={true}
       >
         <div className="space-y-3">
           <label className="block text-sm text-gray-300">Name</label>
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full px-3 py-2 bg-gray-800 rounded text-white"
+            autoFocus
+            className="input-field w-full"
           />
+
           <label className="block text-sm text-gray-300">Code</label>
           <input
             value={code}
             onChange={(e) => setCode(e.target.value)}
-            className="w-full px-3 py-2 bg-gray-800 rounded text-white"
+            className="input-field w-full"
           />
+
+          <label className="block text-sm text-gray-300">Description</label>
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            className="input-field w-full h-24 resize-y"
+          />
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm text-gray-300">
+                Discount Type
+              </label>
+              <select
+                value={discountType}
+                onChange={(e) => setDiscountType(e.target.value as any)}
+                className="input-field w-full"
+              >
+                <option value="percentage">Percentage</option>
+                <option value="fixed_amount">Fixed amount</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm text-gray-300">
+                Discount Value
+              </label>
+              <input
+                type="text"
+                inputMode="numeric"
+                value={discountValue}
+                onChange={(e) => {
+                  const raw = e.target.value.replace(/[^\d]/g, "");
+                  const sanitized = raw.replace(/^0(?=\d)/, "");
+                  setDiscountValue(sanitized);
+                }}
+                className="input-field w-full"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-3 gap-3">
+            <div>
+              <label className="block text-sm text-gray-300">Min Tickets</label>
+              <input
+                type="number"
+                value={minTickets}
+                onChange={(e) => setMinTickets(Number(e.target.value))}
+                className="input-field w-full"
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-gray-300">
+                Max Discount
+              </label>
+              <input
+                type="text"
+                inputMode="numeric"
+                value={maxDiscount}
+                onChange={(e) => {
+                  const raw = e.target.value.replace(/[^\d]/g, "");
+                  const sanitized = raw.replace(/^0(?=\d)/, "");
+                  setMaxDiscount(sanitized);
+                }}
+                className="input-field w-full"
+                placeholder={
+                  discountType === "fixed_amount" ? "null for fixed amount" : ""
+                }
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-sm text-gray-300">Valid From</label>
+              <input
+                type="datetime-local"
+                value={validFrom}
+                onChange={(e) => setValidFrom(e.target.value)}
+                className="input-field w-full"
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-gray-300">Valid Until</label>
+              <input
+                type="datetime-local"
+                value={validUntil}
+                onChange={(e) => setValidUntil(e.target.value)}
+                className="input-field w-full"
+              />
+            </div>
+          </div>
+
+          <label className="block text-sm text-gray-300">
+            Movie IDs (optional, comma separated)
+          </label>
+          <input
+            value={movieIdsStr}
+            onChange={(e) => setMovieIdsStr(e.target.value)}
+            className="input-field w-full"
+          />
+
           <label className="inline-flex items-center gap-2 text-sm text-gray-300">
             <input
               type="checkbox"

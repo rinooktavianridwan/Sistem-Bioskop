@@ -176,13 +176,15 @@ const FacilitiesPage: React.FC = () => {
         title={editing ? "Edit Facility" : "Create Facility"}
         onCancel={() => setShowModal(false)}
         onConfirm={submit}
+        centerTitle={true} 
       >
         <div className="space-y-3">
           <label className="block text-sm text-gray-300">Name</label>
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full px-3 py-2 bg-gray-800 rounded text-white"
+            autoFocus
+            className="input-field w-full"
           />
         </div>
       </Modal>

@@ -20,6 +20,10 @@ const MoviesAdminPage: React.FC = () => {
   const [genreIdsStr, setGenreIdsStr] = useState("");
   const [posterFile, setPosterFile] = useState<File | null>(null);
 
+  // preview state
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [showImagePreview, setShowImagePreview] = useState(false);
+
   const fetchList = async () => {
     setLoading(true);
     try {
@@ -111,6 +115,13 @@ const MoviesAdminPage: React.FC = () => {
       alert("Operation failed");
     }
   };
+
+  useEffect(() => {
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [previewUrl]);
 
   const remove = async (id: number) => {
     if (!confirm("Delete movie?")) return;
@@ -232,20 +243,22 @@ const MoviesAdminPage: React.FC = () => {
         title={editing ? "Edit Movie" : "Create Movie"}
         onCancel={() => setShowModal(false)}
         onConfirm={submit}
+        centerTitle={true}
       >
         <div className="space-y-3">
           <label className="block text-sm text-gray-300">Title</label>
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full px-3 py-2 bg-gray-800 rounded text-white"
+            autoFocus
+            className="input-field"
           />
 
           <label className="block text-sm text-gray-300">Overview</label>
           <textarea
             value={overview}
             onChange={(e) => setOverview(e.target.value)}
-            className="w-full px-3 py-2 bg-gray-800 rounded text-white"
+            className="input-field h-24 resize-y"
           />
 
           <label className="block text-sm text-gray-300">Duration (mins)</label>
@@ -253,7 +266,7 @@ const MoviesAdminPage: React.FC = () => {
             type="number"
             value={duration}
             onChange={(e) => setDuration(Number(e.target.value))}
-            className="w-40 px-3 py-2 bg-gray-800 rounded text-white"
+            className="input-field w-40"
           />
 
           <label className="block text-sm text-gray-300">
@@ -262,18 +275,73 @@ const MoviesAdminPage: React.FC = () => {
           <input
             value={genreIdsStr}
             onChange={(e) => setGenreIdsStr(e.target.value)}
-            className="w-full px-3 py-2 bg-gray-800 rounded text-white"
+            className="input-field"
           />
 
           <label className="block text-sm text-gray-300">
             Poster (optional)
           </label>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(e) => setPosterFile(e.target.files?.[0] ?? null)}
-          />
+          <div className="flex items-center gap-3">
+            <input
+              id="poster-input"
+              type="file"
+              accept="image/*"
+              onChange={(e) => {
+                const f = e.target.files?.[0] ?? null;
+                setPosterFile(f);
+                if (f) {
+                  if (previewUrl) {
+                    URL.revokeObjectURL(previewUrl);
+                  }
+                  setPreviewUrl(URL.createObjectURL(f));
+                } else {
+                  if (previewUrl) {
+                    URL.revokeObjectURL(previewUrl);
+                  }
+                  setPreviewUrl(null);
+                }
+              }}
+              className="hidden"
+            />
+            <label
+              htmlFor="poster-input"
+              className="px-3 py-2 bg-gray-700 text-white rounded border border-gray-600 cursor-pointer select-none"
+            >
+              Choose File
+            </label>
+            <div className="text-sm text-gray-300">
+              {posterFile?.name ?? "No file chosen"}
+            </div>
+          </div>
+
+          {previewUrl && (
+            <div className="w-full mt-2 justify-center">
+              <img
+                src={previewUrl}
+                alt="Poster preview"
+                className="w-28 h-10 object-cover rounded border border-gray-700 cursor-pointer"
+                onClick={() => setShowImagePreview(true)}
+              />
+            </div>
+          )}
         </div>
+      </Modal>
+
+      <Modal
+        open={showImagePreview}
+        title="Poster Preview"
+        onCancel={() => setShowImagePreview(false)}
+        hideDefaultButtons={true}
+      >
+        {previewUrl && (
+          <div className="flex justify-center">
+            <img
+              src={previewUrl}
+              alt="Poster large preview"
+              className="max-w-full max-h-[70vh] object-contain rounded"
+            />
+          </div>
+        )}
       </Modal>
     </div>
   );
