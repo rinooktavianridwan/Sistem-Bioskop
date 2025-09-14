@@ -33,6 +33,7 @@ func RegisterRoutes(r *gin.RouterGroup, iam *IAMModule) {
 	r.GET("/users", middleware.AdminOnly(), iam.UserController.GetAll)
 	r.GET("/users/:id", middleware.AdminOnly(), iam.UserController.GetByID)
 	r.PUT("/users/:id", middleware.AdminOnly(), iam.UserController.Update)
+	r.PUT("/users/my", middleware.Auth(), iam.UserController.UpdateMy)
 	r.PUT("/users/upload-avatar", middleware.Auth(), iam.UserController.UploadAvatar)
 	r.DELETE("/users/:id", middleware.AdminOnly(), iam.UserController.Delete)
 

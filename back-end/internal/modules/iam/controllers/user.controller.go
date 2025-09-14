@@ -136,3 +136,45 @@ func (c *UserController) UploadAvatar(ctx *gin.Context) {
 		nil,
 	))
 }
+
+func (c *UserController) UpdateMy(ctx *gin.Context) {
+    userIDv, exists := ctx.Get("user_id")
+    if !exists {
+        ctx.JSON(http.StatusUnauthorized, utils.UnauthorizedResponse("Unauthorized"))
+        return
+    }
+
+    var req requests.UserProfileUpdateRequest
+    if err := ctx.ShouldBindJSON(&req); err != nil {
+        ctx.JSON(http.StatusBadRequest, utils.BadRequestResponse(err.Error()))
+        return
+    }
+
+    uid := uint(userIDv.(float64))
+
+    updateReq := requests.UserUpdateRequest{
+        Name:     req.Name,
+        Email:    req.Email,
+        Password: req.Password,
+        IsAdmin:  nil,
+    }
+
+    if err := c.Service.Update(uid, &updateReq); err != nil {
+        if errors.Is(err, utils.ErrUserNotFound) {
+            ctx.JSON(http.StatusNotFound, utils.NotFoundResponse(err.Error()))
+            return
+        }
+        if errors.Is(err, utils.ErrEmailAlreadyExists) {
+            ctx.JSON(http.StatusBadRequest, utils.BadRequestResponse(err.Error()))
+            return
+        }
+        ctx.JSON(http.StatusInternalServerError, utils.InternalServerErrorResponse(err.Error()))
+        return
+    }
+
+    ctx.JSON(http.StatusOK, utils.SuccessResponse(
+        http.StatusOK,
+        "Profile updated successfully",
+        nil,
+    ))
+}
