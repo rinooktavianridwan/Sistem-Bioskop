@@ -1,11 +1,12 @@
 package repositories
 
 import (
-    "movie-app-go/internal/models"
-    "movie-app-go/internal/modules/schedule/options"
-    "movie-app-go/internal/repository"
-    "time"
-    "gorm.io/gorm"
+	"movie-app-go/internal/models"
+	"movie-app-go/internal/modules/schedule/options"
+	"movie-app-go/internal/repository"
+	"time"
+
+	"gorm.io/gorm"
 )
 
 type ScheduleRepository struct {
@@ -17,7 +18,7 @@ func NewScheduleRepository(db *gorm.DB) *ScheduleRepository {
 }
 
 func (r *ScheduleRepository) GetAllWithOptions(opts *options.GetAllScheduleOptions) (repository.PaginationResult[models.Schedule], error) {
-    query := r.DB.Preload("Movie").Preload("Studio")
+    query := r.DB.Preload("Movie").Preload("Studio").Preload("Movie.MovieGenres.Genre").Preload("Studio.FacilityStudios.Facility")
 
     if opts.MovieTitle != "" {
         query = query.Joins("JOIN movies ON schedules.movie_id = movies.id").
@@ -42,7 +43,7 @@ func (r *ScheduleRepository) GetAllWithOptions(opts *options.GetAllScheduleOptio
 
 func (r *ScheduleRepository) GetByID(id uint) (*models.Schedule, error) {
     var schedule models.Schedule
-    if err := r.DB.Preload("Movie").Preload("Studio").First(&schedule, id).Error; err != nil {
+    if err := r.DB.Preload("Movie").Preload("Studio").Preload("Movie.MovieGenres.Genre").Preload("Studio.FacilityStudios.Facility").First(&schedule, id).Error; err != nil {
         return nil, err
     }
     return &schedule, nil
