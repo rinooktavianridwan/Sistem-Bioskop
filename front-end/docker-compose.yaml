@@ -1,0 +1,11 @@
+services:
+  frontend:
+      build:
+        context: .
+        dockerfile: Dockerfile
+      container_name: movieapp_frontend
+      ports:
+        - "60004:80"
+      environment:
+        - REACT_APP_API_URL=http://localhost:60000/api
+      restart: unless-stopped

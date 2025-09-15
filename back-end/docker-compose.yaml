@@ -8,7 +8,7 @@ services:
       POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
       POSTGRES_DB: ${DATABASE_NAME}
     ports:
-      - "${DATABASE_PORT}:5432"
+      - "60002:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -20,7 +20,7 @@ services:
   redis:
     image: redis:8.0.1
     ports:
-      - "6379:6379"
+      - "60003:6379"
     volumes:
       - redis-data:/data
     healthcheck:
@@ -38,7 +38,7 @@ services:
       - postgres
       - redis
     ports:
-       - "9000:3000"
+       - "60000:3000"
     volumes:
       - ./uploads:/app/uploads
     env_file:
