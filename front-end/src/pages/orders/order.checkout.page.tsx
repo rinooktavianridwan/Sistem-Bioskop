@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import axiosInstance from "../../config/api.config";
+import axiosInstance, { buildMediaSrc } from "../../config/api.config";
 import { useAuth } from "../../contexts/useAuth.hook";
 import type { Schedule as ScheduleType } from "../../types/model.type";
 import Modal from "../../components/modal.component";
@@ -159,14 +159,7 @@ const OrderCheckoutPage: React.FC = () => {
     <div className="max-w-4xl mx-auto py-10 px-4">
       <div className="flex gap-6 items-start">
         <img
-          src={
-            schedule.movie?.poster_url
-              ? `${(import.meta.env.VITE_API_URL as string).replace(
-                  /\/$/,
-                  ""
-                )}/${schedule.movie.poster_url}`
-              : "/No-Image-Placeholder.png"
-          }
+          src={buildMediaSrc(schedule.movie?.poster_url)}
           alt={schedule.movie?.title}
           className="w-36 h-52 object-cover rounded"
         />

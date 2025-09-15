@@ -3,12 +3,20 @@ import axios, { AxiosHeaders, type InternalAxiosRequestConfig, type AxiosRespons
 const rawUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 const API_BASE_URL = rawUrl.endsWith('/api') ? rawUrl : `${rawUrl}/api`;
 
+export const API_URL = rawUrl.replace(/\/$/, "");
+
 export const axiosInstance = axios.create({
   baseURL: API_BASE_URL,
   headers: new AxiosHeaders({
     'Content-Type': 'application/json',
   }),
 });
+
+export function buildMediaSrc(raw?: string | null) {
+  if (!raw) return "/No-Image-Placeholder.png";
+  if (/^https?:\/\//i.test(raw)) return raw;
+  return `${API_URL}/${raw.replace(/^\/+/, "")}`;
+}
 
 // Interceptors
 axiosInstance.interceptors.request.use(

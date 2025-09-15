@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import axiosInstance from '../../config/api.config';
+import axiosInstance, { buildMediaSrc } from "../../config/api.config";
 import type { Movie as MovieType } from '../../types/model.type';
 import { ArrowLeft } from 'lucide-react';
 
@@ -9,7 +9,6 @@ const MovieDetail: React.FC = () => {
   const [movie, setMovie] = useState<MovieType | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const API_URL = (import.meta.env.VITE_API_URL as string || '').replace(/\/$/, '');
 
   useEffect(() => {
     const fetchMovie = async () => {
@@ -31,7 +30,7 @@ const MovieDetail: React.FC = () => {
   if (error) return <div className="text-red-400">{error}</div>;
   if (!movie) return <div className="text-gray-300">Movie not found</div>;
 
-  const posterSrc = movie.poster_url ? `${API_URL}/${movie.poster_url}` : '/No-Image-Placeholder.png';
+  const posterSrc = buildMediaSrc(movie.poster_url);
 
   return (
     <div className="max-w-4xl mx-auto py-12 px-4">

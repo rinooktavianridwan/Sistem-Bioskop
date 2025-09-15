@@ -78,6 +78,14 @@ const AdminLayout: React.FC = () => {
           >
             Schedules
           </NavLink>
+          <NavLink
+           to="users"
+           className={({ isActive }) =>
+             `block px-3 py-2 rounded ${isActive ? "bg-blue-700 text-white" : "hover:bg-gray-800"}`
+           }
+         >
+           Users
+         </NavLink>
         </nav>
       </aside>
 

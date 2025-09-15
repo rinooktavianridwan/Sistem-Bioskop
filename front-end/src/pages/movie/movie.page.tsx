@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axiosInstance from '../../config/api.config';
+import axiosInstance, { buildMediaSrc } from "../../config/api.config";
 import { Film } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import type { Movie as MovieType } from '../../types/model.type';
@@ -12,8 +12,6 @@ const Movies: React.FC = () => {
   const [perPage, setPerPage] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
-
-  const API_URL = (import.meta.env.VITE_API_URL as string || '').replace(/\/$/, '');
 
   const fetchMovies = async () => {
     setLoading(true);
@@ -69,7 +67,7 @@ const Movies: React.FC = () => {
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
         {movies.map(m => {
-          const posterSrc = m.poster_url ? `${API_URL}/${m.poster_url}` : '/No-Image-Placeholder.png';
+          const posterSrc = buildMediaSrc(m.poster_url);
           return (
             <Link key={m.id} to={`/movies/${m.id}`} className="flex flex-col items-center group">
               <div className="w-full aspect-[2/3] bg-gray-700 rounded overflow-hidden flex items-center justify-center">

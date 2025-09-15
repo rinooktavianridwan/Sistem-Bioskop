@@ -20,6 +20,7 @@ import FacilitiesPage from './pages/admin/master/facilities.page';
 import GenresPage from './pages/admin/master/genres.page';
 import MoviesAdminPage from './pages/admin/movies.page';
 import PromosAdminPage from './pages/admin/promos.page';
+import UsersAdminPage from './pages/admin/users.page';
 import SchedulesAdminPage from './pages/admin/schedules.page';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode; adminOnly?: boolean }> = ({ 
@@ -87,6 +88,7 @@ const AppRoutes: React.FC = () => {
         <Route path="movies" element={<MoviesAdminPage />} />
         <Route path="promos" element={<PromosAdminPage />} />
         <Route path="schedules" element={<SchedulesAdminPage />} />
+        <Route path="users" element={<UsersAdminPage />} />
       </Route>
         
       </Route>

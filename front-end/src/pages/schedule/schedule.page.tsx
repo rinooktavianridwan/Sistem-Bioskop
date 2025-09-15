@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axiosInstance from '../../config/api.config';
+import axiosInstance, { buildMediaSrc } from '../../config/api.config';
 import { Calendar } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
 import type { Schedule as ScheduleType, Movie } from '../../types/model.type';
@@ -29,8 +29,6 @@ const Schedules: React.FC = () => {
   const [total, setTotal] = useState(0);
   const [date, setDate] = useState<string>(initialDate);
   const [movieQuery, setMovieQuery] = useState<string>(initialMovie);
-
-  const API_URL = (import.meta.env.VITE_API_URL as string || '').replace(/\/$/, '');
 
   useEffect(() => {
     const sp = new URLSearchParams(searchParams.toString());
@@ -149,7 +147,7 @@ const Schedules: React.FC = () => {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
         {groups.map(g => {
-          const posterSrc = g.poster ? `${API_URL}/${g.poster}` : '/No-Image-Placeholder.png';
+          const posterSrc = buildMediaSrc(g.poster);
           const detailQuery = new URLSearchParams({ movie: g.movie.title, date });
           return (
             <Link

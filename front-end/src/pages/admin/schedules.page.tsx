@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axiosInstance from "../../config/api.config";
-import type { Schedule } from "../../types/model.type";
+import type { Schedule, Movie } from "../../types/model.type";
 import Modal from "../../components/modal.component";
 
 const SchedulesAdminPage: React.FC = () => {
@@ -15,15 +15,15 @@ const SchedulesAdminPage: React.FC = () => {
   // filters
   const [date, setDate] = useState<string>("");
   const [movieTitle, setMovieTitle] = useState<string>("");
-  const [studioId, setStudioId] = useState<number | "">("");
+  const [studioId, setStudioId] = useState<number | string>("");
   const [studios, setStudios] = useState<{ id: number; name: string }[]>([]);
   const [movies, setMovies] = useState<{ id: number; title: string }[]>([]);
 
   // modal CRUD
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState<Schedule | null>(null);
-  const [movieId, setMovieId] = useState<number | "">("");
-  const [studioSelId, setStudioSelId] = useState<number | "">("");
+  const [movieId, setMovieId] = useState<number | string>("");
+  const [studioSelId, setStudioSelId] = useState<number | string>("");
   const [scheduleDate, setScheduleDate] = useState("");
   const [startTime, setStartTime] = useState("");
   const [price, setPrice] = useState<number>(75000);
@@ -37,11 +37,13 @@ const SchedulesAdminPage: React.FC = () => {
     setPrice(75000);
   };
 
+  type Params = Record<string, string | number | undefined>;
+
   const fetchList = async () => {
     setLoading(true);
     setError("");
     try {
-      const params: Record<string, any> = {
+      const params: Params = {
         page,
         per_page: Math.min(50, perPage),
       };
@@ -50,7 +52,8 @@ const SchedulesAdminPage: React.FC = () => {
         params.date_to = date;
       }
       if (movieTitle) params.movie_title = movieTitle;
-      if (studioId && studioId !== "") params.studio_id = studioId;
+      if (studioId !== "" && studioId !== undefined)
+        params.studio_id = studioId as number;
 
       const res = await axiosInstance.get("/schedules", { params });
       const pag = res.data?.data;
@@ -87,8 +90,11 @@ const SchedulesAdminPage: React.FC = () => {
         params: { per_page: 50 },
       });
       const pag = res.data?.data;
-      const data = Array.isArray(pag?.data) ? pag.data : [];
-      setMovies(data);
+      const data = Array.isArray(pag?.data) ? (pag.data as Movie[]) : [];
+      const unique = Array.from(
+        new Map(data.map((m: Movie) => [m.id, m])).values()
+      );
+      setMovies(unique.map((m) => ({ id: m.id, title: m.title })));
     } catch (e) {
       console.warn("Failed to load movies", e);
     }
@@ -130,7 +136,7 @@ const SchedulesAdminPage: React.FC = () => {
 
   const submit = async () => {
     try {
-      if (!movieId || movieId === "" || !studioSelId || studioSelId === "") {
+      if (movieId === "" || studioSelId === "") {
         alert("Please select movie and studio");
         return;
       }
@@ -141,6 +147,7 @@ const SchedulesAdminPage: React.FC = () => {
 
       const localStart = `${scheduleDate}T${startTime}:00`;
       const startIso = new Date(localStart).toISOString();
+
       const d = new Date(scheduleDate);
       d.setUTCHours(0, 0, 0, 0);
       const dateStr = d.toISOString();
@@ -321,6 +328,7 @@ const SchedulesAdminPage: React.FC = () => {
           </div>
         </>
       )}
+
       <Modal
         open={showModal}
         title={editing ? "Edit Schedule" : "Create Schedule"}
@@ -387,6 +395,7 @@ const SchedulesAdminPage: React.FC = () => {
               />
             </div>
           </div>
+
           <label className="text-sm text-gray-300">Price</label>
           <input
             type="number"

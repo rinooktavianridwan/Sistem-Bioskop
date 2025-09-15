@@ -1,13 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import Modal from "../../components/modal.component";
-import axiosInstance from "../../config/api.config";
+import axiosInstance, { buildMediaSrc } from "../../config/api.config";
 import type { Schedule as ScheduleType } from "../../types/model.type";
-
-const API_URL = ((import.meta.env.VITE_API_URL as string) || "").replace(
-  /\/$/,
-  ""
-);
 
 function rowIndexToLetters(idx: number) {
   let s = "";
@@ -167,11 +162,7 @@ const OrderNewPage: React.FC = () => {
     <div className="max-w-5xl mx-auto py-10 px-4">
       <div className="mb-6 flex gap-6">
         <img
-          src={
-            schedule.movie?.poster_url
-              ? `${API_URL}/${schedule.movie.poster_url}`
-              : "/No-Image-Placeholder.png"
-          }
+          src={buildMediaSrc(schedule.movie?.poster_url)}
           alt={schedule.movie?.title}
           className="w-40 h-60 object-cover rounded"
         />

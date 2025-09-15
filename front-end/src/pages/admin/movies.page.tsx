@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axiosInstance from "../../config/api.config";
+import axiosInstance, { buildMediaSrc } from "../../config/api.config";
 import type { Movie } from "../../types/model.type";
 import Modal from "../../components/modal.component";
 
@@ -164,11 +164,7 @@ const MoviesAdminPage: React.FC = () => {
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6">
         {items.map((m) => {
-          const posterSrc = m.poster_url
-            ? `${(import.meta.env.VITE_API_URL as string).replace(/\/$/, "")}/${
-                m.poster_url
-              }`
-            : "/No-Image-Placeholder.png";
+          const posterSrc = buildMediaSrc(m.poster_url);
           return (
             <div key={m.id} className="bg-gray-800 rounded overflow-hidden">
               <img

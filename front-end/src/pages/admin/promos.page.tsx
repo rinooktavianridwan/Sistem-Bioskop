@@ -7,6 +7,15 @@ interface Promo {
   name: string;
   code: string;
   is_active: boolean;
+
+  description?: string;
+  discount_type?: "percentage" | "fixed_amount";
+  discount_value?: number;
+  min_tickets?: number;
+  max_discount?: number | null;
+  valid_from?: string;
+  valid_until?: string;
+  movie_ids?: number[];
 }
 
 const PromosAdminPage: React.FC = () => {
@@ -21,6 +30,8 @@ const PromosAdminPage: React.FC = () => {
   // modal CRUD
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState<Promo | null>(null);
+
+  // form state (numeric inputs kept as strings for UX)
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
   const [isActive, setIsActive] = useState(true);
@@ -28,10 +39,9 @@ const PromosAdminPage: React.FC = () => {
   const [discountType, setDiscountType] = useState<
     "percentage" | "fixed_amount"
   >("percentage");
-  const [discountValue, setDiscountValue] = useState<number | "">(0);
+  const [discountValue, setDiscountValue] = useState<string>("");
   const [minTickets, setMinTickets] = useState<number>(1);
-  const [maxDiscount, setMaxDiscount] = useState<number | null>(0);
-  const [usageLimit, setUsageLimit] = useState<number | null>(null);
+  const [maxDiscount, setMaxDiscount] = useState<string>("");
   const [validFrom, setValidFrom] = useState<string>("");
   const [validUntil, setValidUntil] = useState<string>("");
   const [movieIdsStr, setMovieIdsStr] = useState<string>("");
@@ -53,12 +63,13 @@ const PromosAdminPage: React.FC = () => {
 
   const fetchList = async () => {
     setLoading(true);
+    setError("");
     try {
       const res = await axiosInstance.get("/promos", {
         params: { page, per_page: Math.min(50, perPage) },
       });
       const pag = res.data?.data;
-      const data = Array.isArray(pag?.data) ? pag.data : [];
+      const data: Promo[] = Array.isArray(pag?.data) ? pag.data : [];
       setItems(data);
       setPage(pag?.page ?? page);
       setPerPage(pag?.per_page ?? perPage);
@@ -66,6 +77,7 @@ const PromosAdminPage: React.FC = () => {
       setTotal(pag?.total ?? 0);
     } catch (err) {
       console.error(err);
+      setError("Failed to load promos");
     } finally {
       setLoading(false);
     }
@@ -83,29 +95,26 @@ const PromosAdminPage: React.FC = () => {
 
   const openEdit = (p: Promo) => {
     setEditing(p);
-    // populate available fields if provided by API (safe any-cast)
-    const anyP = p as any;
+
     setName(p.name);
     setCode(p.code);
     setIsActive(p.is_active);
-    setDescription(anyP.description ?? "");
-    setDiscountType(anyP.discount_type ?? "percentage");
+    setDescription(p.description ?? "");
+    setDiscountType(p.discount_type ?? "percentage");
     setDiscountValue(
-      anyP.discount_value !== undefined && anyP.discount_value !== null
-        ? String(anyP.discount_value)
+      p.discount_value !== undefined && p.discount_value !== null
+        ? String(p.discount_value)
         : ""
     );
-    setMinTickets(anyP.min_tickets ?? 1);
+    setMinTickets(p.min_tickets ?? 1);
     setMaxDiscount(
-      anyP.max_discount !== undefined && anyP.max_discount !== null
-        ? String(anyP.max_discount)
+      p.max_discount !== undefined && p.max_discount !== null
+        ? String(p.max_discount)
         : ""
     );
-    setValidFrom(anyP.valid_from ? String(anyP.valid_from).slice(0, 16) : "");
-    setValidUntil(
-      anyP.valid_until ? String(anyP.valid_until).slice(0, 16) : ""
-    );
-    setMovieIdsStr((anyP.movie_ids || []).join(","));
+    setValidFrom(p.valid_from ? String(p.valid_from).slice(0, 16) : "");
+    setValidUntil(p.valid_until ? String(p.valid_until).slice(0, 16) : "");
+    setMovieIdsStr((p.movie_ids || []).join(","));
     setShowModal(true);
   };
 
@@ -116,7 +125,7 @@ const PromosAdminPage: React.FC = () => {
         code,
         description: description || undefined,
         discount_type: discountType,
-        discount_value: Number(discountValue) || 0,
+        discount_value: Number(discountValue || 0),
         min_tickets: Number(minTickets) || 0,
         max_discount:
           discountType === "fixed_amount"
@@ -124,7 +133,6 @@ const PromosAdminPage: React.FC = () => {
             : maxDiscount === ""
             ? undefined
             : Number(maxDiscount),
-        usage_limit: usageLimit ?? undefined,
         is_active: isActive,
       };
 
@@ -294,7 +302,11 @@ const PromosAdminPage: React.FC = () => {
               </label>
               <select
                 value={discountType}
-                onChange={(e) => setDiscountType(e.target.value as any)}
+                onChange={(e) =>
+                  setDiscountType(
+                    e.target.value as "percentage" | "fixed_amount"
+                  )
+                }
                 className="input-field w-full"
               >
                 <option value="percentage">Percentage</option>
@@ -312,7 +324,7 @@ const PromosAdminPage: React.FC = () => {
                 value={discountValue}
                 onChange={(e) => {
                   const raw = e.target.value.replace(/[^\d]/g, "");
-                  const sanitized = raw.replace(/^0(?=\d)/, "");
+                  const sanitized = raw.replace(/^0+(?=\d)/, "");
                   setDiscountValue(sanitized);
                 }}
                 className="input-field w-full"
@@ -340,7 +352,7 @@ const PromosAdminPage: React.FC = () => {
                 value={maxDiscount}
                 onChange={(e) => {
                   const raw = e.target.value.replace(/[^\d]/g, "");
-                  const sanitized = raw.replace(/^0(?=\d)/, "");
+                  const sanitized = raw.replace(/^0+(?=\d)/, "");
                   setMaxDiscount(sanitized);
                 }}
                 className="input-field w-full"
@@ -349,6 +361,7 @@ const PromosAdminPage: React.FC = () => {
                 }
               />
             </div>
+            <div />
           </div>
 
           <div className="grid grid-cols-2 gap-3">

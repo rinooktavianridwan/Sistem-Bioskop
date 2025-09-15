@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import axiosInstance from "../../config/api.config";
+import axiosInstance, { buildMediaSrc } from "../../config/api.config";
 import { useAuth } from "../../contexts/useAuth.hook";
 import Modal from "../../components/modal.component";
 import type {
@@ -9,10 +9,6 @@ import type {
   Facility,
 } from "../../types/model.type";
 
-const API_URL = ((import.meta.env.VITE_API_URL as string) || "").replace(
-  /\/$/,
-  ""
-);
 const formatTime = (iso: string) =>
   new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
@@ -100,9 +96,7 @@ const ScheduleDetail: React.FC = () => {
   if (!movie)
     return <div className="text-gray-300 p-6">No schedules found</div>;
 
-  const poster = movie.poster_url
-    ? `${API_URL}/${movie.poster_url}`
-    : "/No-Image-Placeholder.png";
+  const poster = buildMediaSrc(movie.poster_url);
 
   const onBook = () => {
     if (!selectedScheduleId) return;
