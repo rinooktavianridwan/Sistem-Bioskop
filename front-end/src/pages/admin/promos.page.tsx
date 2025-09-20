@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axiosInstance from "../../config/api.config";
 import Modal from "../../components/modal.component";
+import type { Movie } from "../../types/model.type";
 
 interface Promo {
   id: number;
@@ -45,6 +46,36 @@ const PromosAdminPage: React.FC = () => {
   const [validFrom, setValidFrom] = useState<string>("");
   const [validUntil, setValidUntil] = useState<string>("");
   const [movieIdsStr, setMovieIdsStr] = useState<string>("");
+
+  // State untuk movie
+  const [movieList, setMovieList] = useState<Movie[]>([]);
+  const [selectedMovies, setSelectedMovies] = useState<Movie[]>([]);
+  const [showMovieModal, setShowMovieModal] = useState(false);
+
+  useEffect(() => {
+    const fetchMovies = async () => {
+      try {
+        const res = await axiosInstance.get("/movies", {
+          params: { per_page: 50 },
+        });
+        const pag = res.data?.data;
+        const data: Movie[] = Array.isArray(pag?.data) ? pag.data : [];
+        setMovieList(data);
+      } catch (err) {
+        console.error("Failed to fetch movies", err);
+      }
+    };
+    fetchMovies();
+  }, []);
+
+  const addMovie = (m: Movie) => {
+    setSelectedMovies((prev) =>
+      prev.some((x) => x.id === m.id) ? prev : [...prev, m]
+    );
+  };
+  const removeMovie = (id: number) => {
+    setSelectedMovies((prev) => prev.filter((m) => m.id !== id));
+  };
 
   const resetForm = () => {
     setName("");
@@ -127,6 +158,7 @@ const PromosAdminPage: React.FC = () => {
         discount_type: discountType,
         discount_value: Number(discountValue || 0),
         min_tickets: Number(minTickets) || 0,
+        movie_ids: selectedMovies.map((m) => m.id),
         max_discount:
           discountType === "fixed_amount"
             ? null
@@ -386,13 +418,47 @@ const PromosAdminPage: React.FC = () => {
           </div>
 
           <label className="block text-sm text-gray-300">
-            Movie IDs (optional, comma separated)
+            Movies (optional)
           </label>
-          <input
-            value={movieIdsStr}
-            onChange={(e) => setMovieIdsStr(e.target.value)}
-            className="input-field w-full"
-          />
+          <div className="flex gap-2 items-center">
+            <div className="relative flex-1">
+              <div
+                className="input-field flex items-center flex-wrap gap-2 overflow-x-auto min-h-[40px] pr-2"
+                style={{ background: "#1e293b" }}
+              >
+                {selectedMovies.map((m) => (
+                  <span
+                    key={m.id}
+                    className="flex items-center bg-gray-700 text-white px-3 py-1 rounded-full"
+                  >
+                    {m.title}
+                    <button
+                      type="button"
+                      className="ml-2 text-gray-400 hover:text-red-400"
+                      onClick={() => removeMovie(m.id)}
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+              </div>
+              <input
+                value={selectedMovies.map((m) => m.title).join(", ")}
+                disabled
+                tabIndex={-1}
+                className="absolute inset-0 w-full h-full opacity-0 pointer-events-none"
+                placeholder="Select movies"
+                readOnly
+              />
+            </div>
+            <button
+              type="button"
+              className="px-3 py-2 bg-blue-600 rounded text-white"
+              onClick={() => setShowMovieModal(true)}
+            >
+              Browse
+            </button>
+          </div>
 
           <label className="inline-flex items-center gap-2 text-sm text-gray-300">
             <input
@@ -402,6 +468,29 @@ const PromosAdminPage: React.FC = () => {
             />{" "}
             Active
           </label>
+        </div>
+      </Modal>
+      <Modal
+        open={showMovieModal}
+        title="Select Movies"
+        onCancel={() => setShowMovieModal(false)}
+        onConfirm={() => setShowMovieModal(false)}
+        centerTitle={true}
+      >
+        <div className="space-y-2">
+          {movieList.map((m) => (
+            <label key={m.id} className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={selectedMovies.some((sel) => sel.id === m.id)}
+                onChange={(e) => {
+                  if (e.target.checked) addMovie(m);
+                  else removeMovie(m.id);
+                }}
+              />
+              <span>{m.title}</span>
+            </label>
+          ))}
         </div>
       </Modal>
     </div>

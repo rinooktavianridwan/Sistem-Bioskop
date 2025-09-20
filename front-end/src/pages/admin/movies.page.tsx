@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axiosInstance, { buildMediaSrc } from "../../config/api.config";
 import type { Movie } from "../../types/model.type";
 import Modal from "../../components/modal.component";
+import type { Genre } from "../../types/model.type";
 
 const MoviesAdminPage: React.FC = () => {
   const [items, setItems] = useState<Movie[]>([]);
@@ -23,6 +24,11 @@ const MoviesAdminPage: React.FC = () => {
   // preview state
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [showImagePreview, setShowImagePreview] = useState(false);
+
+  // State untuk genre
+  const [genreList, setGenreList] = useState<Genre[]>([]);
+  const [selectedGenres, setSelectedGenres] = useState<Genre[]>([]);
+  const [showGenreModal, setShowGenreModal] = useState(false);
 
   const fetchList = async () => {
     setLoading(true);
@@ -69,12 +75,18 @@ const MoviesAdminPage: React.FC = () => {
     setShowModal(true);
   };
 
+  const addGenre = (g: Genre) => {
+    setSelectedGenres((prev) =>
+      prev.some((x) => x.id === g.id) ? prev : [...prev, g]
+    );
+  };
+  const removeGenre = (id: number) => {
+    setSelectedGenres((prev) => prev.filter((g) => g.id !== id));
+  };
+
   const submit = async () => {
     try {
-      const genre_ids = genreIdsStr
-        .split(",")
-        .map((s) => Number(s.trim()))
-        .filter((n) => !isNaN(n) && n > 0);
+      const genre_ids = selectedGenres.map((g) => g.id);
 
       if (posterFile) {
         const form = new FormData();
@@ -122,6 +134,22 @@ const MoviesAdminPage: React.FC = () => {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [previewUrl]);
+
+  useEffect(() => {
+    const fetchGenres = async () => {
+      try {
+        const res = await axiosInstance.get("/genres", {
+          params: { per_page: 50 },
+        });
+        const pag = res.data?.data;
+        const data: Genre[] = Array.isArray(pag?.data) ? pag.data : [];
+        setGenreList(data);
+      } catch (err) {
+        console.error("Failed to fetch genres", err);
+      }
+    };
+    fetchGenres();
+  }, []);
 
   const remove = async (id: number) => {
     if (!confirm("Delete movie?")) return;
@@ -265,14 +293,46 @@ const MoviesAdminPage: React.FC = () => {
             className="input-field w-40"
           />
 
-          <label className="block text-sm text-gray-300">
-            Genre IDs (comma separated)
-          </label>
-          <input
-            value={genreIdsStr}
-            onChange={(e) => setGenreIdsStr(e.target.value)}
-            className="input-field"
-          />
+          <label className="block text-sm text-gray-300">Genres</label>
+          <div className="flex gap-2 items-center">
+            <div className="relative flex-1">
+              <div
+                className="input-field flex items-center flex-wrap gap-2 overflow-x-auto min-h-[40px] pr-2"
+                style={{ background: "#1e293b" }}
+              >
+                {selectedGenres.map((g) => (
+                  <span
+                    key={g.id}
+                    className="flex items-center bg-gray-700 text-white px-3 py-1 rounded-full"
+                  >
+                    {g.name}
+                    <button
+                      type="button"
+                      className="ml-2 text-gray-400 hover:text-red-400"
+                      onClick={() => removeGenre(g.id)}
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+              </div>
+              <input
+                value={selectedGenres.map((g) => g.name).join(", ")}
+                disabled
+                tabIndex={-1}
+                className="absolute inset-0 w-full h-full opacity-0 pointer-events-none"
+                placeholder="Select genres"
+                readOnly
+              />
+            </div>
+            <button
+              type="button"
+              className="px-3 py-2 bg-blue-600 rounded text-white"
+              onClick={() => setShowGenreModal(true)}
+            >
+              Browse
+            </button>
+          </div>
 
           <label className="block text-sm text-gray-300">
             Poster (optional)
@@ -338,6 +398,29 @@ const MoviesAdminPage: React.FC = () => {
             />
           </div>
         )}
+      </Modal>
+      <Modal
+        open={showGenreModal}
+        title="Select Genres"
+        onCancel={() => setShowGenreModal(false)}
+        onConfirm={() => setShowGenreModal(false)}
+        centerTitle={true}
+      >
+        <div className="space-y-2">
+          {genreList.map((g) => (
+            <label key={g.id} className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={selectedGenres.some((sel) => sel.id === g.id)}
+                onChange={(e) => {
+                  if (e.target.checked) addGenre(g);
+                  else removeGenre(g.id);
+                }}
+              />
+              <span>{g.name}</span>
+            </label>
+          ))}
+        </div>
       </Modal>
     </div>
   );

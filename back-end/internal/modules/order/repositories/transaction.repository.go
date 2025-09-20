@@ -92,10 +92,6 @@ func (r *TransactionRepository) CreateTransaction(transaction *models.Transactio
     return r.DB.Create(transaction).Error
 }
 
-func (r *TransactionRepository) CreatePromoUsage(promoUsage *models.PromoUsage) error {
-    return r.DB.Create(promoUsage).Error
-}
-
 func (r *TransactionRepository) IncrementPromoUsageCount(promoID uint) error {
     return r.DB.Model(&models.Promo{}).Where("id = ?", promoID).
         UpdateColumn("usage_count", gorm.Expr("usage_count + ?", 1)).Error

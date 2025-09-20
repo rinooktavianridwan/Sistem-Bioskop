@@ -264,13 +264,6 @@ func (s *PromoService) ValidatePromo(userID uint, req *requests.ValidatePromoReq
 		}, nil
 	}
 
-	if promo.UsageLimit != nil && promo.UsageCount >= *promo.UsageLimit {
-		return &responses.PromoValidationResponse{
-			IsValid: false,
-			Message: "Promo usage limit exceeded",
-		}, nil
-	}
-
 	if len(promo.PromoMovies) > 0 {
 		isValidForMovie := false
 		for _, pm := range promo.PromoMovies {

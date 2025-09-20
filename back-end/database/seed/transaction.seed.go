@@ -113,21 +113,6 @@ func SeedTransactions(db *gorm.DB) ([]models.Transaction, error) {
 			"updated_at": data.UpdatedAt,
 		})
 
-		if transaction.PromoID != nil && transaction.DiscountAmount > 0 {
-			promoUsage := models.PromoUsage{
-				PromoID:        *transaction.PromoID,
-				UserID:         transaction.UserID,
-				TransactionID:  transaction.ID,
-				DiscountAmount: transaction.DiscountAmount,
-				UsedAt:         data.CreatedAt,
-			}
-			db.Create(&promoUsage)
-
-
-			db.Model(&models.Promo{}).Where("id = ?", *transaction.PromoID).
-				UpdateColumn("usage_count", gorm.Expr("usage_count + ?", 1))
-		}
-
 		createdTransactions = append(createdTransactions, transaction)
 	}
 

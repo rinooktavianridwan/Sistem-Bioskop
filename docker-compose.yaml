@@ -1,0 +1,141 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: movieapp_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: adminrino
+      POSTGRES_DB: movie-app-go
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
+
+  redis:
+    image: redis:8.0.1
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
+
+  backend:
+    build:
+      context: ./back-end
+      dockerfile: Dockerfile
+    container_name: movieapp_backend
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ./uploads:/app/uploads
+    env_file:
+      - ./back-end/.env
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  frontend:
+    build:
+      context: ./front-end
+      dockerfile: Dockerfile
+    container_name: movieapp_frontend
+    environment:
+      - REACT_APP_API_URL=http://api.lelebakar-cinema.site/api
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  wordpress-db:
+    image: mysql:8.0
+    container_name: wordpress_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: ${WP_DB_USER:-wordpress}
+      MYSQL_PASSWORD: ${WP_DB_PASSWORD:-wordpress_pass}
+      MYSQL_ROOT_PASSWORD: ${WP_DB_ROOT_PASSWORD:-root_pass}
+    volumes:
+      - wp_db_data:/var/lib/mysql
+    networks:
+      - app-network
+
+  wordpress:
+    image: wordpress:6.3-apache
+    container_name: movieapp_wordpress
+    restart: unless-stopped
+    depends_on:
+      - wordpress-db
+    environment:
+      WORDPRESS_DB_HOST: wordpress-db:3306
+      WORDPRESS_DB_USER: ${WP_DB_USER:-wordpress}
+      WORDPRESS_DB_PASSWORD: ${WP_DB_PASSWORD:-wordpress_pass}
+      WORDPRESS_DB_NAME: wordpress
+    volumes:
+      - wp_data:/var/www/html
+    networks:
+      - app-network
+
+  nginx-proxy-manager:
+    image: jc21/nginx-proxy-manager:latest
+    container_name: nginx_proxy_manager
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "81:81"
+    volumes:
+      - npm_data:/data
+      - npm_letsencrypt:/etc/letsencrypt
+    environment:
+      DB_SQLITE_FILE: "/data/database.sqlite"
+    networks:
+      - app-network
+
+  npm-setup:
+    image: python:3.9-slim
+    container_name: npm_setup
+    depends_on:
+      - nginx-proxy-manager
+    volumes:
+      - ./npm-setup:/app
+    working_dir: /app
+    command: ["python", "setup_proxy.py"]
+    networks:
+      - app-network
+
+  migrate:
+    image: migrate/migrate
+    depends_on:
+      - postgres
+    volumes:
+      - ./database/migrations:/migrations
+    command: [
+      "-path", "/migrations",
+      "-database", "postgres://postgres:adminrino@postgres:5432/movie-app-go?sslmode=disable",
+      "up"
+    ]
+    networks:
+      - app-network
+
+volumes:
+  pgdata: {}
+  redis-data: {}
+  wp_db_data: {}
+  wp_data: {}
+  npm_data: {}
+  npm_letsencrypt: {}
+
+networks:
+  app-network:
+    driver: bridge

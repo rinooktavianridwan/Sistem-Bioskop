@@ -2,6 +2,7 @@ package jobs
 
 import (
 	"log"
+	"time"
 
 	"movie-app-go/internal/constants"
 	notificationJobs "movie-app-go/internal/modules/notification/jobs"
@@ -11,9 +12,10 @@ import (
 )
 
 type WorkerService struct {
-	server *asynq.Server
-	mux    *asynq.ServeMux
-	DB     *gorm.DB
+	server      *asynq.Server
+	mux         *asynq.ServeMux
+	DB          *gorm.DB
+	stopCleaner chan struct{}
 }
 
 func NewWorkerService(redisAddr string, db *gorm.DB) *WorkerService {
@@ -31,9 +33,10 @@ func NewWorkerService(redisAddr string, db *gorm.DB) *WorkerService {
 
 	mux := asynq.NewServeMux()
 	ws := &WorkerService{
-		server: server,
-		mux:    mux,
-		DB:     db,
+		server:      server,
+		mux:         mux,
+		DB:          db,
+		stopCleaner: make(chan struct{}),
 	}
 
 	ws.registerHandlers()
@@ -43,11 +46,13 @@ func NewWorkerService(redisAddr string, db *gorm.DB) *WorkerService {
 
 func (w *WorkerService) Start() error {
 	log.Println("Starting Asynq worker...")
+	StartPendingCleaner(w.DB, 1*time.Minute, w.stopCleaner)
 	return w.server.Start(w.mux)
 }
 
 func (w *WorkerService) Shutdown() {
 	log.Println("Shutting down Asynq worker...")
+	close(w.stopCleaner)
 	w.server.Shutdown()
 }
 

@@ -42,6 +42,8 @@ func (c *TransactionController) Create(ctx *gin.Context) {
 			ctx.JSON(http.StatusBadRequest, utils.BadRequestResponse(err.Error()))
 		case errors.Is(err, utils.ErrSeatAlreadyBooked):
 			ctx.JSON(http.StatusConflict, utils.ErrorResponse(http.StatusConflict, err.Error()))
+        case errors.Is(err, utils.ErrPendingTransactionExists):
+			ctx.JSON(http.StatusConflict, utils.ErrorResponse(http.StatusConflict, err.Error()))
 		case errors.Is(err, utils.ErrPromoNotFound):
 			ctx.JSON(http.StatusBadRequest, utils.BadRequestResponse(err.Error()))
 		default:

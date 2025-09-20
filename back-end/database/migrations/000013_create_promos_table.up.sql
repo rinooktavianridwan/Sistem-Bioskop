@@ -7,8 +7,6 @@ CREATE TABLE promos (
     discount_value NUMERIC(12,2) NOT NULL CHECK (discount_value > 0),
     min_tickets INTEGER DEFAULT 1 CHECK (min_tickets >= 1),
     max_discount NUMERIC(12,2) CHECK (max_discount IS NULL OR max_discount > 0),
-    usage_limit INTEGER CHECK (usage_limit IS NULL OR usage_limit > 0),
-    usage_count INTEGER DEFAULT 0 CHECK (usage_count >= 0),
     is_active BOOLEAN DEFAULT true,
     valid_from TIMESTAMP NOT NULL,
     valid_until TIMESTAMP NOT NULL CHECK (valid_until > valid_from),

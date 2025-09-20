@@ -14,8 +14,6 @@ type PromoResponse struct {
 	DiscountValue float64              `json:"discount_value"`
 	MinTickets    int                  `json:"min_tickets"`
 	MaxDiscount   *float64             `json:"max_discount"`
-	UsageLimit    *int                 `json:"usage_limit"`
-	UsageCount    int                  `json:"usage_count"`
 	IsActive      bool                 `json:"is_active"`
 	ValidFrom     time.Time            `json:"valid_from"`
 	ValidUntil    time.Time            `json:"valid_until"`
@@ -54,8 +52,6 @@ func ToPromoResponse(promo models.Promo) PromoResponse {
 		DiscountValue: promo.DiscountValue,
 		MinTickets:    promo.MinTickets,
 		MaxDiscount:   promo.MaxDiscount,
-		UsageLimit:    promo.UsageLimit,
-		UsageCount:    promo.UsageCount,
 		IsActive:      promo.IsActive,
 		ValidFrom:     promo.ValidFrom,
 		ValidUntil:    promo.ValidUntil,
