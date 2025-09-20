@@ -7,7 +7,7 @@ import (
 
 	"github.com/gin-contrib/cors"
 
-	// "movie-app-go/database/seed"
+	"movie-app-go/database/seed"
 	"movie-app-go/internal/modules/genre"
 	"movie-app-go/internal/modules/iam"
 	"movie-app-go/internal/modules/movie"
@@ -52,9 +52,9 @@ func main() {
 	}()
 
 	// Jalankan seeder user
-	// if err := seed.RunAllSeeders(db); err != nil {
-	// 	panic(err)
-	// }
+	 if err := seed.RunAllSeeders(db); err != nil {
+	 	panic(err)
+	}
 
 	// Dependency injection
 	iamModule := iam.NewIAMModule(db)
@@ -71,7 +71,8 @@ func main() {
 	r := gin.Default()
 
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://frontend.lelebakar-cinema.site", "http://api.lelebakar-cinema.site"},		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowOrigins:     []string{"http://lb-cinema.site", "http://api.lb-cinema.site"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
