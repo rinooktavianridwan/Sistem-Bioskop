@@ -1,11 +1,11 @@
 import requests
 
 # NPM API credentials
-npm_url = "http://localhost:81/api"
+npm_url = "http://nginx-proxy-manager:81/api"
 npm_email = "admin@example.com"  # Default admin email
 npm_password = "changeme"        # Default admin password
-new_email = "lb-admin@example.com"  # Replace with your desired email
-new_password = "lb-admin123"        # Replace with your desired password
+new_email = "admin@gmail.com"  # Replace with your desired email
+new_password = "adminbioskop"        # Replace with your desired password
 
 # Proxy host configurations
 proxy_hosts = [
