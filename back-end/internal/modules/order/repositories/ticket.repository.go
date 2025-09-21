@@ -70,6 +70,7 @@ func (r *TicketRepository) GetByScheduleID(scheduleID uint) ([]models.Ticket, er
 	return tickets, err
 }
 
+// ========== Safety Check Methods ==========
 func (r *TicketRepository) CheckTicketOwnership(ticketID, userID uint) (int64, error) {
 	var count int64
 	err := r.DB.Model(&models.Ticket{}).
@@ -85,4 +86,11 @@ func (r *TicketRepository) UpdateTicket(ticket *models.Ticket) error {
 
 func (r *TicketRepository) WithTransaction(fn func(*gorm.DB) error) error {
 	return r.DB.Transaction(fn)
+}
+
+// COMMENT CODE TIDAK AMAN: NoTx wrapper for ticket repo.
+// Use this to run ticket-related ops without DB transactional wrapper.
+func (r *TicketRepository) WithTransactionNoTx(fn func(*gorm.DB) error) error {
+    // no transaction started here -> vulnerable
+    return fn(r.DB)
 }

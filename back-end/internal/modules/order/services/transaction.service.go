@@ -171,7 +171,7 @@ func NewTransactionService(
 func (s *TransactionService) CreateTransaction(userID uint, req *requests.CreateTransactionRequest) error {
 	var transaction *models.Transaction
 
-	err := s.TransactionRepo.WithTransaction(func(tx *gorm.DB) error {
+	err := s.TransactionRepo.WithTransactionNoTx(func(tx *gorm.DB) error {
 		// ===== Vulnerable: no pending-check here (commented out in safe) =====
 
 		schedule, err := s.TransactionRepo.GetScheduleWithMovieAndStudio(req.ScheduleID)
@@ -251,7 +251,7 @@ func (s *TransactionService) CreateTransaction(userID uint, req *requests.Create
 			})
 		}
 
-		if err := s.TransactionRepo.CreateTickets(tickets); err != nil {
+		if err := s.TransactionRepo.CreateTicketsNoTx(tickets); err != nil {
 			return err
 		}
 
