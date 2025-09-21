@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
 import axiosInstance from "../../config/api.config";
 import { useAuth } from "../../contexts/useAuth.hook";
+import { useNavigate } from "react-router-dom";
 
 const Profile: React.FC = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [name, setName] = useState(user?.name ?? "");
   const [email, setEmail] = useState(user?.email ?? "");
   const [password, setPassword] = useState("");
@@ -70,7 +72,11 @@ const Profile: React.FC = () => {
         <div className="card p-6 text-white bg-gray-900 rounded">
           <div className="flex flex-col items-center mb-6">
             <div className="w-40 h-40 rounded-full overflow-hidden bg-gray-700 flex items-center justify-center">
-              <img src={previewUrl ?? user?.avatar ?? "/No-Image-Placeholder.png"} alt="Avatar" className="w-full h-full object-cover" />
+              <img
+                src={previewUrl ?? user?.avatar ?? "/No-Image-Placeholder.png"}
+                alt="Avatar"
+                className="w-full h-full object-cover"
+              />
             </div>
             <label className="mt-2 inline-flex items-center px-3 py-1 bg-gray-700 rounded text-sm cursor-pointer">
               <input
@@ -95,21 +101,56 @@ const Profile: React.FC = () => {
 
           <div className="space-y-3">
             <label className="block text-sm text-gray-300">Full Name</label>
-            <input value={name} onChange={(e) => setName(e.target.value)} className="input-field w-full" />
+            <input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="input-field w-full"
+            />
 
             <label className="block text-sm text-gray-300">Email</label>
-            <input value={email} onChange={(e) => setEmail(e.target.value)} className="input-field w-full" />
+            <input
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="input-field w-full"
+            />
 
-            <label className="block text-sm text-gray-300">New Password (leave blank to keep)</label>
-            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="input-field w-full" />
+            <label className="block text-sm text-gray-300">
+              New Password (leave blank to keep)
+            </label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="input-field w-full"
+            />
 
             <div className="flex items-center justify-between">
               <div className="text-sm text-green-400">{msg}</div>
               <div className="flex gap-2">
-                <button onClick={() => { setAvatarFile(null); setPreviewUrl(null); }} className="px-3 py-2 bg-gray-700 rounded">Reset Avatar</button>
-                <button onClick={submit} disabled={loading} className="px-4 py-2 bg-blue-600 rounded text-white disabled:opacity-50">
+                <button
+                  onClick={() => {
+                    setAvatarFile(null);
+                    setPreviewUrl(null);
+                  }}
+                  className="px-3 py-2 bg-gray-700 rounded"
+                >
+                  Reset Avatar
+                </button>
+                <button
+                  onClick={submit}
+                  disabled={loading}
+                  className="px-4 py-2 bg-blue-600 rounded text-white disabled:opacity-50"
+                >
                   {loading ? "Saving..." : "Save Profile"}
                 </button>
+                {user?.role === "admin" && (
+                  <button
+                    onClick={() => navigate("/admin")}
+                    className="px-4 py-2 bg-green-600 rounded text-white hover:bg-green-500"
+                  >
+                    Admin Panel
+                  </button>
+                )}
               </div>
             </div>
           </div>

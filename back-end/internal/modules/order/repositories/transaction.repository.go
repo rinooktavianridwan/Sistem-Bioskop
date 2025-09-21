@@ -123,3 +123,21 @@ func (r *TransactionRepository) GetScheduleByTransactionID(transactionID uint) (
 func (r *TransactionRepository) WithTransaction(fn func(*gorm.DB) error) error {
     return r.DB.Transaction(fn)
 }
+
+// CODE TIDAK AMAN: Variant tanpa DB transaction wrapper.
+// Use these only for vulnerability/demo mode. They intentionally skip r.DB.Transaction
+// which allows race/bypass scenarios when used by services.
+func (r *TransactionRepository) WithTransactionNoTx(fn func(*gorm.DB) error) error {
+    // no transaction started here -> vulnerable
+    return fn(r.DB)
+}
+
+func (r *TransactionRepository) CreateTransactionNoTx(transaction *models.Transaction) error {
+    // same as CreateTransaction but intended for NoTx flow (kept separate intentionally)
+    return r.DB.Create(transaction).Error
+}
+
+func (r *TransactionRepository) CreateTicketsNoTx(tickets []models.Ticket) error {
+    // create tickets without transactional safety (vulnerable)
+    return r.DB.Create(&tickets).Error
+}
