@@ -3,8 +3,6 @@ services:
     image: postgres:16
     container_name: movieapp_postgres
     restart: unless-stopped
-    ports:
-      - "127.0.0.1:60000:5432"
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: adminrino
