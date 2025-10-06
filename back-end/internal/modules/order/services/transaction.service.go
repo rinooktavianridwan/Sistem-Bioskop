@@ -238,6 +238,11 @@ func (s *TransactionService) CreateTransaction(userID uint, req *requests.Create
 			PromoID:        promoID,
 		}
 
+		// NEW: persist the transaction so tickets can reference a real ID
+		if err := s.TransactionRepo.CreateTransactionNoTx(transaction); err != nil {
+			return err
+		}
+
 		// Vulnerable: skip r.CreateTransaction(transaction)
 		// Create tickets referencing the (non-persisted) transaction
 		tickets := make([]models.Ticket, 0, len(req.SeatNumbers))
