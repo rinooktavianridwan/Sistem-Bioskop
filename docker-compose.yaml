@@ -51,7 +51,7 @@ services:
       dockerfile: Dockerfile
     container_name: movieapp_frontend
     environment:
-      - REACT_APP_API_URL=http://api.lb-cinema.site:8443/api
+      - REACT_APP_API_URL=http://api.lb-cinema.site/api
     restart: unless-stopped
     networks:
       - app-network
@@ -91,9 +91,9 @@ services:
     container_name: nginx_proxy_manager
     restart: unless-stopped
     ports:
-      - "8080:80"
-      - "8443:443"
-      - "8181:81"
+      - "80:80"
+      - "443:443"
+      - "81:81"
     volumes:
       - npm_data:/data
       - npm_letsencrypt:/etc/letsencrypt

@@ -71,7 +71,7 @@ func main() {
 	r := gin.Default()
 
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://lb-cinema.site:8080", "http://api.lb-cinema.site:8080"},
+		AllowOrigins:     []string{"http://lb-cinema.site", "http://api.lb-cinema.site"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
