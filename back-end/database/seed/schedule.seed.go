@@ -125,23 +125,16 @@ func SeedSchedules(db *gorm.DB) ([]models.Schedule, error) {
     startDate := time.Date(2025, 10, 7, 0, 0, 0, 0, time.UTC)
     endDate := time.Date(2025, 12, 31, 0, 0, 0, 0, time.UTC)
 
-    // Time slots for each day
-    timeSlots := []struct {
+    // Available time slots pool for scheduling
+    allTimeSlots := []struct {
         hour   int
         minute int
     }{
         {10, 0},  // 10:00 AM
-        {14, 30}, // 2:30 PM
-        {19, 0},  // 7:00 PM
-    }
-
-    // Additional time slots for variety
-    extraTimeSlots := []struct {
-        hour   int
-        minute int
-    }{
         {12, 0},  // 12:00 PM
+        {14, 30}, // 2:30 PM
         {16, 30}, // 4:30 PM
+        {19, 0},  // 7:00 PM
         {21, 30}, // 9:30 PM
     }
 
@@ -161,7 +154,7 @@ func SeedSchedules(db *gorm.DB) ([]models.Schedule, error) {
         return false
     }
 
-    // Generate random schedules for the date range
+    // Generate schedules for the date range - each movie gets exactly 3 showtimes per day
     for currentDate := startDate; !currentDate.After(endDate); currentDate = currentDate.AddDate(0, 0, 1) {
         daySchedules := []models.Schedule{} // Track schedules for this day to avoid conflicts
 
@@ -175,81 +168,119 @@ func SeedSchedules(db *gorm.DB) ([]models.Schedule, error) {
             dayMovies[i], dayMovies[j] = dayMovies[j], dayMovies[i]
         }
 
-        // First, schedule main time slots (ensure at least 5 movies)
-        movieIndex := 0
-        for _, timeSlot := range timeSlots {
-            for studioIdx := 0; studioIdx < len(studios) && movieIndex < len(dayMovies); studioIdx++ {
-                movie := dayMovies[movieIndex%len(dayMovies)]
-                studio := studios[studioIdx]
-
-                // Calculate end time based on movie duration + buffer
-                bufferMinutes := 30
-                totalMinutes := int(movie.Duration) + bufferMinutes
-
-                startTime := time.Date(
-                    currentDate.Year(), currentDate.Month(), currentDate.Day(),
-                    timeSlot.hour, timeSlot.minute, 0, 0, time.UTC,
-                )
-                endTime := startTime.Add(time.Duration(totalMinutes) * time.Minute)
-
-                // Check for conflicts with existing schedules for this studio
-                if !hasConflict(studio.ID, startTime, endTime, daySchedules) {
-                    // Select price randomly from the range
-                    priceIndex := rand.Intn(len(prices))
-                    price := prices[priceIndex]
-
-                    schedule := models.Schedule{
-                        MovieID:   movie.ID,
-                        StudioID:  studio.ID,
-                        StartTime: startTime,
-                        EndTime:   endTime,
-                        Date:      currentDate,
-                        Price:     price,
-                    }
-
-                    daySchedules = append(daySchedules, schedule)
-                    movieIndex++
-                }
+        // For each movie, create exactly 3 showtimes
+        for _, movie := range dayMovies {
+            movieScheduleCount := 0
+            
+            // Shuffle time slots for this movie
+            movieTimeSlots := make([]struct {
+                hour   int
+                minute int
+            }, len(allTimeSlots))
+            copy(movieTimeSlots, allTimeSlots)
+            
+            // Shuffle time slots
+            for i := len(movieTimeSlots) - 1; i > 0; i-- {
+                j := rand.Intn(i + 1)
+                movieTimeSlots[i], movieTimeSlots[j] = movieTimeSlots[j], movieTimeSlots[i]
             }
-        }
 
-        // Add extra schedules to ensure variety (different movies in different time slots)
-        for _, extraSlot := range extraTimeSlots {
-            for studioIdx := 0; studioIdx < len(studios) && movieIndex < len(dayMovies); studioIdx++ {
-                movie := dayMovies[movieIndex%len(dayMovies)]
-                studio := studios[studioIdx]
+            // Try to schedule this movie 3 times using different time slots and studios
+            for _, timeSlot := range movieTimeSlots {
+                if movieScheduleCount >= 3 {
+                    break // Movie has 3 schedules already
+                }
 
-                bufferMinutes := 30
-                totalMinutes := int(movie.Duration) + bufferMinutes
+                // Shuffle studios for this time slot
+                shuffledStudios := make([]models.Studio, len(studios))
+                copy(shuffledStudios, studios)
+                for i := len(shuffledStudios) - 1; i > 0; i-- {
+                    j := rand.Intn(i + 1)
+                    shuffledStudios[i], shuffledStudios[j] = shuffledStudios[j], shuffledStudios[i]
+                }
 
-                startTime := time.Date(
-                    currentDate.Year(), currentDate.Month(), currentDate.Day(),
-                    extraSlot.hour, extraSlot.minute, 0, 0, time.UTC,
-                )
-                endTime := startTime.Add(time.Duration(totalMinutes) * time.Minute)
-
-                // Check for conflicts
-                if !hasConflict(studio.ID, startTime, endTime, daySchedules) {
-                    priceIndex := rand.Intn(len(prices))
-                    price := prices[priceIndex]
-
-                    schedule := models.Schedule{
-                        MovieID:   movie.ID,
-                        StudioID:  studio.ID,
-                        StartTime: startTime,
-                        EndTime:   endTime,
-                        Date:      currentDate,
-                        Price:     price,
+                // Try each studio for this time slot
+                for _, studio := range shuffledStudios {
+                    if movieScheduleCount >= 3 {
+                        break
                     }
 
-                    daySchedules = append(daySchedules, schedule)
-                    movieIndex++
+                    // Calculate end time based on movie duration + buffer
+                    bufferMinutes := 30
+                    totalMinutes := int(movie.Duration) + bufferMinutes
+
+                    startTime := time.Date(
+                        currentDate.Year(), currentDate.Month(), currentDate.Day(),
+                        timeSlot.hour, timeSlot.minute, 0, 0, time.UTC,
+                    )
+                    endTime := startTime.Add(time.Duration(totalMinutes) * time.Minute)
+
+                    // Check for conflicts with existing schedules for this studio
+                    if !hasConflict(studio.ID, startTime, endTime, daySchedules) {
+                        // Select price randomly from the range
+                        priceIndex := rand.Intn(len(prices))
+                        price := prices[priceIndex]
+
+                        schedule := models.Schedule{
+                            MovieID:   movie.ID,
+                            StudioID:  studio.ID,
+                            StartTime: startTime,
+                            EndTime:   endTime,
+                            Date:      currentDate,
+                            Price:     price,
+                        }
+
+                        daySchedules = append(daySchedules, schedule)
+                        movieScheduleCount++
+                        break // Found a slot for this time, move to next time slot
+                    }
                 }
             }
 
-            // Stop if we have enough variety for the day
-            if len(daySchedules) >= 15 {
-                break
+            // If we couldn't schedule 3 times for this movie, try to fill remaining slots with any available time
+            if movieScheduleCount < 3 {
+                // Try alternative approach - find any available slots
+                for hour := 9; hour <= 22 && movieScheduleCount < 3; hour++ {
+                    for minute := 0; minute <= 30 && movieScheduleCount < 3; minute += 30 {
+                        for _, studio := range studios {
+                            if movieScheduleCount >= 3 {
+                                break
+                            }
+
+                            bufferMinutes := 30
+                            totalMinutes := int(movie.Duration) + bufferMinutes
+
+                            startTime := time.Date(
+                                currentDate.Year(), currentDate.Month(), currentDate.Day(),
+                                hour, minute, 0, 0, time.UTC,
+                            )
+                            endTime := startTime.Add(time.Duration(totalMinutes) * time.Minute)
+
+                            // Skip if end time goes to next day
+                            if endTime.Day() != startTime.Day() {
+                                continue
+                            }
+
+                            if !hasConflict(studio.ID, startTime, endTime, daySchedules) {
+                                priceIndex := rand.Intn(len(prices))
+                                price := prices[priceIndex]
+
+                                schedule := models.Schedule{
+                                    MovieID:   movie.ID,
+                                    StudioID:  studio.ID,
+                                    StartTime: startTime,
+                                    EndTime:   endTime,
+                                    Date:      currentDate,
+                                    Price:     price,
+                                }
+
+                                daySchedules = append(daySchedules, schedule)
+                                movieScheduleCount++
+                                break
+                            }
+                        }
+                    }
+                }
             }
         }
 
