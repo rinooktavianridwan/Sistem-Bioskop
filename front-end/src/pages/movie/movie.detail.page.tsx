@@ -43,9 +43,24 @@ const MovieDetail: React.FC = () => {
           <img src={posterSrc} alt={movie.title} className="w-full rounded" />
         </div>
         <div className="md:w-2/3 text-white">
-          <h1 className="text-3xl font-bold mb-2">{movie.title}</h1>
+          {/* VULNERABLE XSS - Testing purposes only */}
+          <h1 
+            className="text-3xl font-bold mb-2"
+            dangerouslySetInnerHTML={{ __html: movie.title }}
+          />
+          {/* SAFE VERSION - commented out for testing */}
+          {/* <h1 className="text-3xl font-bold mb-2">{movie.title}</h1> */}
+          
           <div className="text-sm text-gray-400 mb-4">{(movie.genres || []).map(g => g.name).join(', ')}</div>
-          <p className="text-gray-300 mb-4">{movie.overview}</p>
+          
+          {/* VULNERABLE XSS - Testing purposes only */}
+          <p 
+            className="text-gray-300 mb-4"
+            dangerouslySetInnerHTML={{ __html: movie.overview }}
+          />
+          {/* SAFE VERSION - commented out for testing */}
+          {/* <p className="text-gray-300 mb-4">{movie.overview}</p> */}
+          
           <div className="text-gray-400">Duration: {movie.duration} minutes</div>
         </div>
       </div>

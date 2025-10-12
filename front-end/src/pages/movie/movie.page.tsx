@@ -73,7 +73,13 @@ const Movies: React.FC = () => {
               <div className="w-full aspect-[2/3] bg-gray-700 rounded overflow-hidden flex items-center justify-center">
                 <img src={posterSrc} alt={m.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
               </div>
-              <div className="mt-2 text-sm text-white text-center font-medium">{m.title}</div>
+              {/* VULNERABLE XSS - Testing purposes only */}
+              <div 
+                className="mt-2 text-sm text-white text-center font-medium"
+                dangerouslySetInnerHTML={{ __html: m.title }}
+              />
+              {/* SAFE VERSION - commented out for testing */}
+              {/* <div className="mt-2 text-sm text-white text-center font-medium">{m.title}</div> */}
             </Link>
           );
         })}
