@@ -1,4 +1,4 @@
-# Sistema Bioskop - DevSecOps Vulnerability Assessment
+# Sistem Bioskop - DevSecOps Vulnerability Assessment
 
 Aplikasi sistem manajemen bioskop yang dibangun dengan arsitektur microservices untuk demonstrasi keamanan dan vulnerability assessment dalam konteks DevSecOps.
 
