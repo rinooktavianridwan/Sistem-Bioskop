@@ -61,29 +61,20 @@ Aplikasi sistem manajemen bioskop yang dibangun dengan arsitektur microservices 
 ### 3. Cross-Site Scripting (XSS) Vulnerabilities
 
 #### XSS pada Title Movie di 3 Halaman Frontend
+- Movies listing — [`front-end/src/pages/movie/movie.page.tsx`](front-end/src/pages/movie/movie.page.tsx) (line 71+)
+- Movie detail — [`front-end/src/pages/movie/movie.detail.page.tsx`](front-end/src/pages/movie/movie.detail.page.tsx) (line 48+)
+- Schedule listing — [`front-end/src/pages/schedule/schedule.page.tsx`](front-end/src/pages/schedule/schedule.page.tsx) (line 191+ dan 211+)
 
-**1. Movies Page**  
-**Location:** [`front-end/src/pages/movie/movie.page.tsx`](front-end/src/pages/movie/movie.page.tsx) (line 71+)
-
-**2. Movie Detail Page**  
-**Location:** [`front-end/src/pages/movie/movie.detail.page.tsx`](front-end/src/pages/movie/movie.detail.page.tsx) (line 48+)
-
-**3. Schedule Page**  
-**Location:** [`front-end/src/pages/schedule/schedule.page.tsx`](front-end/src/pages/schedule/schedule.page.tsx) (line 191+ dan 211+)
 
 **Vulnerability Details:**
-- Penggunaan `dangerouslySetInnerHTML` untuk menampilkan movie title dan overview tanpa sanitization
-- Memungkinkan injeksi script tag atau HTML berbahaya melalui field movie title/overview
-- Dapat dieksploitasi untuk melakukan client-side attacks seperti session hijacking atau cookie theft
-- Terdapat pada 3 halaman utama: Movies listing, Movie detail, dan Schedule listing
+- Penggunaan `dangerouslySetInnerHTML` tanpa sanitization pada title/overview
+- Memungkinkan injection HTML/JS berbahaya (XSS) yang dapat dieksploitasi client-side
 
 ### 4. WordPress Integration Vulnerabilities
 
 **Vulnerability Plugins:**
-- 
-- 
-- 
-- 
+- WP Statistics — versi 14.4.4 (CVE-2024-2194) — [wp_plugins/wp-statistics/](wp_plugins/wp-statistics/)  
+- All-in-One WP Migration — versi 7.41 (CVE-2021-24216) — [wp_plugins/all-in-one-wp-migration/](wp_plugins/all-in-one-wp-migration/)  
 
 ## 🚀 Quick Start
 
