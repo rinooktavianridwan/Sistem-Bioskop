@@ -54,9 +54,6 @@ Aplikasi sistem manajemen bioskop yang dibangun dengan arsitektur microservices 
 **Vulnerability Details:**
 - User dapat melakukan order lebih dari satu secara bersamaan tanpa ada pembatasan waktu untuk pembayaran
 - Backend memungkinkan user memesan semua kursi dalam satu transaksi (frontend dibatasi maksimal 5 tiket)
-- Implementasi `WithTransactionNoTx` yang rentan terhadap race conditions
-- Seat booking dapat di-double book pada kondisi concurrent access
-- Tidak ada proper transaction isolation untuk seat reservation
 
 ### 3. Cross-Site Scripting (XSS) Vulnerabilities
 
