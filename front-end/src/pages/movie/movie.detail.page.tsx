@@ -44,22 +44,22 @@ const MovieDetail: React.FC = () => {
         </div>
         <div className="md:w-2/3 text-white">
           {/* VULNERABLE XSS - Testing purposes only */}
-          <h1 
+          {/* <h1 
             className="text-3xl font-bold mb-2"
             dangerouslySetInnerHTML={{ __html: movie.title }}
-          />
+          /> */}
           {/* SAFE VERSION - commented out for testing */}
-          {/* <h1 className="text-3xl font-bold mb-2">{movie.title}</h1> */}
+          <h1 className="text-3xl font-bold mb-2">{movie.title}</h1>
           
           <div className="text-sm text-gray-400 mb-4">{(movie.genres || []).map(g => g.name).join(', ')}</div>
           
           {/* VULNERABLE XSS - Testing purposes only */}
-          <p 
+          {/* <p 
             className="text-gray-300 mb-4"
             dangerouslySetInnerHTML={{ __html: movie.overview }}
-          />
+          /> */}
           {/* SAFE VERSION - commented out for testing */}
-          {/* <p className="text-gray-300 mb-4">{movie.overview}</p> */}
+          <p className="text-gray-300 mb-4">{movie.overview}</p>
           
           <div className="text-gray-400">Duration: {movie.duration} minutes</div>
         </div>

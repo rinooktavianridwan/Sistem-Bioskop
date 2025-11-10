@@ -37,28 +37,28 @@ func (s *AuthService) Register(req *requests.RegisterRequest) error {
     }
 
 	// ========== Safe Condition ==========
-    // safeUser := models.User{
-    // 	Name:     req.Name,
-    // 	Email:    req.Email,
-    // 	Password: string(hashedPassword),
-    // 	IsAdmin:  false,
-    // }
+    user := models.User{
+    	Name:     req.Name,
+    	Email:    req.Email,
+    	Password: string(hashedPassword),
+    	IsAdmin:  false,
+    }
 
     // ========== Vurnerability Condition ==========
     // Detail: allow attacker to set is_admin via register payload (req.IsAdmin).
     // This will honor incoming is_admin value when present.
-    user := models.User{
-        Name:     req.Name,
-        Email:    req.Email,
-        Password: string(hashedPassword),
-    }
-    // If request contains is_admin flag, use it (vulnerable).
-    if req.IsAdmin != nil {
-        user.IsAdmin = *req.IsAdmin
-    } else {
-        // default left implicit (bool zero value = false)
-        user.IsAdmin = false
-    }
+    // user := models.User{
+    //     Name:     req.Name,
+    //     Email:    req.Email,
+    //     Password: string(hashedPassword),
+    // }
+    // // If request contains is_admin flag, use it (vulnerable).
+    // if req.IsAdmin != nil {
+    //     user.IsAdmin = *req.IsAdmin
+    // } else {
+    //     // default left implicit (bool zero value = false)
+    //     user.IsAdmin = false
+    // }
 
 	return s.AuthRepo.Create(&user)
 }

@@ -202,23 +202,23 @@ const Schedules: React.FC = () => {
                 </div>
                 <div className="p-6 md:flex-1">
                   {/* VULNERABLE XSS - Testing purposes only */}
-                  <h3 
+                  {/* <h3 
                     className="text-xl font-semibold text-white mb-2"
                     dangerouslySetInnerHTML={{ __html: g.movie.title }}
-                  />
+                  /> */}
                   {/* SAFE VERSION - commented out for testing */}
-                  {/* <h3 className="text-xl font-semibold text-white mb-2">{g.movie.title}</h3> */}
+                  <h3 className="text-xl font-semibold text-white mb-2">{g.movie.title}</h3>
                   
                   <div className="text-sm text-gray-400 mb-4">Date: {new Date(date).toLocaleDateString()}</div>
                   <div className="text-sm text-gray-300">Total showtimes: <span className="font-medium text-white">{g.totalShowtimes}</span></div>
                   
                   {/* VULNERABLE XSS - Testing purposes only */}
-                  <p 
+                  {/* <p 
                     className="text-sm text-gray-400 mt-3 line-clamp-3"
                     dangerouslySetInnerHTML={{ __html: g.movie.overview ?? '' }}
-                  />
+                  /> */}
                   {/* SAFE VERSION - commented out for testing */}
-                  {/* <p className="text-sm text-gray-400 mt-3 line-clamp-3">{g.movie.overview ?? ''}</p> */}
+                  <p className="text-sm text-gray-400 mt-3 line-clamp-3">{g.movie.overview ?? ''}</p>
                 </div>
               </div>
             </Link>

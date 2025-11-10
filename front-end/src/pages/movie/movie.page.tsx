@@ -74,12 +74,12 @@ const Movies: React.FC = () => {
                 <img src={posterSrc} alt={m.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
               </div>
               {/* VULNERABLE XSS - Testing purposes only */}
-              <div 
+              {/* <div 
                 className="mt-2 text-sm text-white text-center font-medium"
                 dangerouslySetInnerHTML={{ __html: m.title }}
-              />
+              /> */}
               {/* SAFE VERSION - commented out for testing */}
-              {/* <div className="mt-2 text-sm text-white text-center font-medium">{m.title}</div> */}
+              <div className="mt-2 text-sm text-white text-center font-medium">{m.title}</div>
             </Link>
           );
         })}
