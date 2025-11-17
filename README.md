@@ -1,6 +1,6 @@
-# Sistem Bioskop - DevSecOps Vulnerability Assessment
+# Sistem Bioskop - DevSecOps Vulnerability Assessment -- [Secure Code]
 
-Aplikasi sistem manajemen bioskop yang dibangun dengan arsitektur microservices untuk demonstrasi keamanan dan vulnerability assessment dalam konteks DevSecOps.
+Aplikasi sistem manajemen bioskop yang dibangun dengan arsitektur microservices untuk demonstrasi keamanan dan vulnerability assessment dalam konteks DevSecOps. Repository ini adalah versi secure dari sistem yang telah dibuat.
 
 ## 📋 Tech Stack
 
