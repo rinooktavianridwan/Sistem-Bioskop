@@ -1,64 +1,64 @@
 services:
-  postgres:
+  secure_postgres:
     image: postgres:16
-    container_name: movieapp_postgres
+    container_name: secure_movieapp_postgres
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: adminrino
       POSTGRES_DB: movie-app-go
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - secure_pgdata:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
-      - app-network
+      - secure_app-network
 
-  redis:
+  secure_redis:
     image: redis:8.0.1
     volumes:
-      - redis-data:/data
+      - secure_redis-data:/data
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
-      - app-network
+      - secure_app-network
 
-  backend:
+  secure_backend:
     build:
       context: ./back-end
       dockerfile: Dockerfile
-    container_name: movieapp_backend
+    container_name: secure_movieapp_backend
     depends_on:
-      - postgres
-      - redis
+      - secure_postgres
+      - secure_redis
     volumes:
       - ./back-end/uploads:/app/uploads
     env_file:
       - ./back-end/.env
     restart: unless-stopped
     networks:
-      - app-network
+      - secure_app-network
 
-  frontend:
+  secure_frontend:
     build:
       context: ./front-end
       dockerfile: Dockerfile
-    container_name: movieapp_frontend
+    container_name: secure_movieapp_frontend
     depends_on:
-      - backend
+      - secure_backend
     restart: unless-stopped
     networks:
-      - app-network
+      - secure_app-network
 
-  wordpress-db:
+  secure_wordpress-db:
     image: mysql:8.0
-    container_name: wordpress_mysql
+    container_name: secure_wordpress_mysql
     restart: unless-stopped
     environment:
       MYSQL_DATABASE: wordpress
@@ -66,64 +66,61 @@ services:
       MYSQL_PASSWORD: ${WP_DB_PASSWORD:-wordpress_pass}
       MYSQL_ROOT_PASSWORD: ${WP_DB_ROOT_PASSWORD:-root_pass}
     volumes:
-      - wp_db_data:/var/lib/mysql
+      - secure_wp_db_data:/var/lib/mysql
     networks:
-      - app-network
+      - secure_app-network
 
-  wordpress:
+  secure_wordpress:
     image: wordpress:6.3-apache
-    container_name: movieapp_wordpress
+    container_name: secure_movieapp_wordpress
     restart: unless-stopped
     depends_on:
-      - wordpress-db
+      - secure_wordpress-db
     environment:
-      WORDPRESS_DB_HOST: wordpress-db:3306
+      WORDPRESS_DB_HOST: secure_wordpress-db:3306
       WORDPRESS_DB_USER: ${WP_DB_USER:-wordpress}
       WORDPRESS_DB_PASSWORD: ${WP_DB_PASSWORD:-wordpress_pass}
       WORDPRESS_DB_NAME: wordpress
     volumes:
       - ./wp_plugins:/var/www/html/wp-content/plugins
     networks:
-      - app-network
+      - secure_app-network
 
-  nginx-proxy-manager:
-    image: jc21/nginx-proxy-manager:latest
-    container_name: nginx_proxy_manager
-    restart: unless-stopped
-    ports:
-      - "80:80"
-      - "443:443"
-      - "81:81"
-    volumes:
-      - npm_data:/data
-      - npm_letsencrypt:/etc/letsencrypt
-    environment:
-      DB_SQLITE_FILE: "/data/database.sqlite"
-    networks:
-      - app-network
+  # nginx-proxy-manager:
+  #   image: jc21/nginx-proxy-manager:latest
+  #   container_name: nginx_proxy_manager
+  #   restart: unless-stopped
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #     - "81:81"
+  #   volumes:
+  #     - npm_data:/data
+  #     - npm_letsencrypt:/etc/letsencrypt
+  #   environment:
+  #     DB_SQLITE_FILE: "/data/database.sqlite"
+  #   networks:
+  #     - app-network
 
-  migrate:
+  secure_migrate:
     image: migrate/migrate
     depends_on:
-      - postgres
+      - secure_postgres
     volumes:
       - ./back-end/database/migrations:/migrations
     command: [
       "-path", "/migrations",
-      "-database", "postgres://postgres:adminrino@postgres:5432/movie-app-go?sslmode=disable",
+      "-database", "postgres://postgres:adminrino@secure_postgres:5432/movie-app-go?sslmode=disable",
       "up"
     ]
     networks:
-      - app-network
+      - secure_app-network
 
 volumes:
-  pgdata: {}
-  redis-data: {}
-  wp_db_data: {}
-  wp_data: {}
-  npm_data: {}
-  npm_letsencrypt: {}
-
+  secure_pgdata: {}
+  secure_redis-data: {}
+  secure_wp_db_data: {}
+  
 networks:
-  app-network:
+  secure_app-network:
     driver: bridge
