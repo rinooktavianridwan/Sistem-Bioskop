@@ -44,7 +44,15 @@ pipeline {
                     
                     sh """
                         ssh -o StrictHostKeyChecking=no dso501@10.34.100.154 '
-                            # --- SETUP (Cek Install) ---
+                            # --- 1. SETUP ENV (CRUCIAL!) ---
+                            # Kita wajib kasih tau Jenkins dimana Go dan Node berada
+                            export PATH=\$PATH:/usr/local/go/bin:/usr/local/node/bin
+
+                            # Cek versi dulu untuk debugging log
+                            echo "Menggunakan Go: \$(go version)"
+                            echo "Menggunakan Node: \$(node -v)"
+
+                            # Setup CodeQL Tool (Download jika belum ada)
                             mkdir -p /home/dso501/tools
                             if [ ! -d "/home/dso501/tools/codeql" ]; then
                                 cd /home/dso501/tools
@@ -57,45 +65,43 @@ pipeline {
                             cd /home/dso501/Sistem-Bioskop
 
                             # =========================================
-                            # BAGIAN 1: SCAN BACKEND (GO)
+                            # BAGIAN 2: SCAN BACKEND (GO)
                             # =========================================
                             echo "[1/2] Scanning Backend (Go)..."
                             rm -rf codeql-db-go
                             
-                            # Create DB Go
+                            # Create DB Go. Tambahan "|| exit 1" agar kalau gagal, pipeline STOP.
                             /home/dso501/tools/codeql/codeql database create codeql-db-go \\
                                 --language=go \\
                                 --source-root=./back-end \\
-                                --overwrite
+                                --overwrite || exit 1
 
                             # Analyze Go
                             /home/dso501/tools/codeql/codeql database analyze codeql-db-go \\
                                 go-security-and-quality.qls \\
                                 --format=csv \\
-                                --output=report-go.csv
+                                --output=report-go.csv || exit 1
 
                             # =========================================
-                            # BAGIAN 2: SCAN FRONTEND (REACT/JS)
+                            # BAGIAN 3: SCAN FRONTEND (REACT/JS)
                             # =========================================
                             echo "[2/2] Scanning Frontend (React/JS)..."
                             rm -rf codeql-db-js
                             
-                            # Create DB JS (React dianggap javascript)
-                            # Perhatikan --source-root mengarah ke folder front-end
+                            # Create DB JS
                             /home/dso501/tools/codeql/codeql database create codeql-db-js \\
                                 --language=javascript \\
                                 --source-root=./front-end \\
-                                --overwrite
+                                --overwrite || exit 1
 
                             # Analyze JS
-                            # Menggunakan query suite javascript-security-and-quality
                             /home/dso501/tools/codeql/codeql database analyze codeql-db-js \\
                                 javascript-security-and-quality.qls \\
                                 --format=csv \\
-                                --output=report-js.csv
+                                --output=report-js.csv || exit 1
 
                             # =========================================
-                            # BAGIAN 3: CEK HASIL
+                            # BAGIAN 4: CEK HASIL
                             # =========================================
                             echo "Merekap Hasil Scan..."
                             

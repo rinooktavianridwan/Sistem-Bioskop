@@ -1,0 +1,20 @@
+[2025-12-01 07:39:41] This is codeql database analyze codeql-db-js javascript-security-and-quality.qls --format=csv --output=report-js.csv
+[2025-12-01 07:39:41] Log file was started late.
+[2025-12-01 07:39:41] [PROGRESS] database analyze> Running queries.
+[2025-12-01 07:39:41] Running plumbing command: codeql database run-queries --evaluator-log-level=5 --warnings=show --qlconfig-file=/home/dso501/Sistem-Bioskop/qlconfig.yml --no-rerun --interpret-passthrough=null,--format=csv,-o=/home/dso501/Sistem-Bioskop/report-js.csv,--max-paths=4,--csv-location-format=line-column,--print-diagnostics-summary,--print-metrics-summary,--qlconfig-file=/home/dso501/Sistem-Bioskop/qlconfig.yml,--,/home/dso501/Sistem-Bioskop/codeql-db-js,javascript-security-and-quality.qls -- /home/dso501/Sistem-Bioskop/codeql-db-js javascript-security-and-quality.qls
+[2025-12-01 07:39:41] Exception caught at top level: Database at /home/dso501/Sistem-Bioskop/codeql-db-js needs to be finalized before running queries; please run codeql database finalize
+                      com.semmle.cli2.database.RunQueriesCommand.executeSubcommand(RunQueriesCommand.java:223)
+                      com.semmle.cli2.picocli.SubcommandCommon.lambda$executeSubcommandWithMessages$5(SubcommandCommon.java:803)
+                      com.semmle.cli2.picocli.SubcommandCommon.withCompilationMessages(SubcommandCommon.java:442)
+                      com.semmle.cli2.picocli.SubcommandCommon.executeSubcommandWithMessages(SubcommandCommon.java:801)
+                      com.semmle.cli2.picocli.PlumbingRunner.run(PlumbingRunner.java:119)
+                      com.semmle.cli2.picocli.SubcommandCommon.execPlumbingInProcess(SubcommandCommon.java:227)
+                      com.semmle.cli2.database.AnalyzeCommand.executeSubcommand(AnalyzeCommand.java:160)
+                      com.semmle.cli2.picocli.SubcommandCommon.lambda$executeSubcommandWithMessages$5(SubcommandCommon.java:803)
+                      com.semmle.cli2.picocli.SubcommandCommon.withCompilationMessages(SubcommandCommon.java:442)
+                      com.semmle.cli2.picocli.SubcommandCommon.executeSubcommandWithMessages(SubcommandCommon.java:801)
+                      com.semmle.cli2.picocli.SubcommandCommon.toplevelMain(SubcommandCommon.java:685)
+                      com.semmle.cli2.picocli.SubcommandCommon.call(SubcommandCommon.java:666)
+                      com.semmle.cli2.picocli.SubcommandMaker.runMain(SubcommandMaker.java:237)
+                      com.semmle.cli2.picocli.SubcommandMaker.runMain(SubcommandMaker.java:247)
+                      com.semmle.cli2.CodeQL.main(CodeQL.java:115)

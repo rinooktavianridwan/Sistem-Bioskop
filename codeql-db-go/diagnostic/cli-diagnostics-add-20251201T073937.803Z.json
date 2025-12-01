@@ -1,0 +1,1 @@
+{"timestamp":"2025-12-01T07:39:37.801+00:00","source":{"id":"cli/database/create","name":"CodeQL CLI: database create"},"plaintextMessage":"A fatal error occurred: Exit status 1 from command: [/home/dso501/tools/codeql/go/tools/autobuild.sh]","severity":"error","visibility":{"telemetry":false},"attributes":{"exitCode":2}}
