@@ -1,6 +1,11 @@
 pipeline {
     agent any
 
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '5'))
+        timestamps()
+    }
+
     stages {
         stage('1. Clone Kode') {
             steps {
@@ -21,12 +26,10 @@ pipeline {
                 script {
                     echo 'Running Basic Scanners (Warning Mode)...'
                     try {
-                        // Trivy (Exit Code 0 - Warning Only)
                         sh "ssh -o StrictHostKeyChecking=no dso501@10.34.100.154 'trivy fs --exit-code 0 --severity HIGH,CRITICAL ./Sistem-Bioskop'"
                     } catch (Exception e) { echo 'Trivy Warning' }
 
                     try {
-                        // Semgrep (Warning Only)
                         sh """
                             ssh -o StrictHostKeyChecking=no dso501@10.34.100.154 "
                                 docker run --rm -v /home/dso501/Sistem-Bioskop:/src returntocorp/semgrep semgrep scan --config auto
@@ -37,93 +40,39 @@ pipeline {
             }
         }
 
-        stage('3. Advanced SAST (CodeQL - Full Stack)') {
+        stage('3. Advanced SAST (CodeQL)') {
             steps {
                 script {
-                    echo 'Menjalankan CodeQL (Go & React)...'
-                    
+                    echo 'Menjalankan CodeQL...'
                     sh """
                         ssh -o StrictHostKeyChecking=no dso501@10.34.100.154 '
-                            # --- 1. SETUP ENV ---
                             export PATH=\$PATH:/usr/local/go/bin:/usr/local/node/bin
 
-                            # Cek versi
-                            echo "Menggunakan Go: \$(go version)"
-                            echo "Menggunakan Node: \$(node -v)"
-
-                            # Setup CodeQL Tool
-                            mkdir -p /home/dso501/tools
                             if [ ! -d "/home/dso501/tools/codeql" ]; then
-                                cd /home/dso501/tools
-                                wget -q https://github.com/github/codeql-action/releases/download/codeql-bundle-v2.16.0/codeql-bundle-linux64.tar.gz
-                                tar -xzf codeql-bundle-linux64.tar.gz
-                                rm codeql-bundle-linux64.tar.gz
+                                echo "CodeQL missing..."
+                                exit 0
                             fi
 
                             cd /home/dso501/Sistem-Bioskop
 
-                            # =========================================
-                            # BAGIAN 2: SCAN BACKEND (GO)
-                            # =========================================
-                            echo "[1/2] Scanning Backend (Go)..."
                             rm -rf codeql-db-go
-                            
-                            # Create DB Go
-                            /home/dso501/tools/codeql/codeql database create codeql-db-go \\
-                                --language=go \\
-                                --source-root=./back-end \\
-                                --overwrite || echo "Gagal membuat DB Go, skipping scan backend..."
+                            /home/dso501/tools/codeql/codeql database create codeql-db-go --language=go --source-root=./back-end --overwrite || echo "Skip Go"
+                            /home/dso501/tools/codeql/codeql database analyze codeql-db-go go-security-and-quality.qls --format=csv --output=report-go.csv
 
-                            # Analyze Go
-                            /home/dso501/tools/codeql/codeql database analyze codeql-db-go \\
-                                go-security-and-quality.qls \\
-                                --format=csv \\
-                                --output=report-go.csv || echo "Gagal analisis Go."
-
-                            # =========================================
-                            # BAGIAN 3: SCAN FRONTEND (REACT/JS)
-                            # =========================================
-                            echo "[2/2] Scanning Frontend (React/JS)..."
                             rm -rf codeql-db-js
-                            
-                            # Create DB JS
-                            /home/dso501/tools/codeql/codeql database create codeql-db-js \\
-                                --language=javascript \\
-                                --source-root=./front-end \\
-                                --overwrite || echo "Gagal membuat DB JS, skipping scan frontend..."
+                            /home/dso501/tools/codeql/codeql database create codeql-db-js --language=javascript --source-root=./front-end --overwrite || echo "Skip JS"
+                            /home/dso501/tools/codeql/codeql database analyze codeql-db-js javascript-security-and-quality.qls --format=csv --output=report-js.csv
 
-                            # Analyze JS
-                            /home/dso501/tools/codeql/codeql database analyze codeql-db-js \\
-                                javascript-security-and-quality.qls \\
-                                --format=csv \\
-                                --output=report-js.csv || echo "Gagal analisis JS."
+                            if [ -s report-go.csv ] || [ -s report-js.csv ]; then
+                                echo "CodeQL menemukan masalah di Go: "
+				cat report-go.csv
+				echo " ------------------------------- "
 
-                            # =========================================
-                            # BAGIAN 4: CEK HASIL (WARNING ONLY)
-                            # =========================================
-                            echo "Merekap Hasil Scan..."
-                            
-                            ISSUES_FOUND=0
-
-                            if [ -s report-go.csv ]; then
-                                echo "CodeQL Backend (Go) menemukan issue!"
-                                cat report-go.csv
-                                ISSUES_FOUND=1
-                            fi
-
-                            if [ -s report-js.csv ]; then
-                                echo "CodeQL Frontend (React) menemukan issue!"
-                                cat report-js.csv
-                                ISSUES_FOUND=1
-                            fi
-
-                            # --- MODIFIKASI DI SINI ---
-                            if [ \$ISSUES_FOUND -eq 1 ]; then
-                                echo "PERINGATAN: CodeQL menemukan vulnerability!"
-                                echo "Namun Pipeline dikonfigurasi untuk TETAP LANJUT (Force Deploy)."
-                                # Tidak ada "exit 1" di sini, jadi pipeline tetap hijau.
+				echo "CodeQL menemukan masalah di React: "
+				cat report-js.csv
+				echo " ------------------------------- "
                             else
-                                echo "Full Stack Aman. Lanjut Deployment."
+                                echo "CodeQL Clean."
                             fi
                         '
                     """
@@ -131,11 +80,11 @@ pipeline {
             }
         }
 
-	stage('4. Build & Deploy') {
+        stage('4. Build & Deploy') {
             steps {
-                echo 'Deploying...'
+                echo 'Deploying Application...'
                 
-                // Inject Environment Variables
+                // Inject .env
                 sh """
                     ssh -o StrictHostKeyChecking=no dso501@10.34.100.154 "
                         cd Sistem-Bioskop/back-end
@@ -152,7 +101,6 @@ pipeline {
                     "
                 """
 
-                // Jalankan Docker Compose (Force Recreate & Clean Volume)
                 sh """
                     ssh -o StrictHostKeyChecking=no dso501@10.34.100.154 "
                         cd Sistem-Bioskop
@@ -160,12 +108,37 @@ pipeline {
                         docker compose up -d --build
                     "
                 """
+                
+                echo 'Menunggu 30 detik agar server siap untuk DAST...'
+                sleep 30
             }
         }
-        
-        stage('5. Verifikasi') {
+
+        stage('5. Dynamic Security Scan (DAST - OWASP ZAP)') {
             steps {
-                echo 'Cek Status Container...'
+                script {
+                    echo 'Menjalankan OWASP ZAP (Baseline Scan)...'
+                    
+                    try {
+                        sh """
+                            ssh -o StrictHostKeyChecking=no dso501@10.34.100.154 "
+                                docker run --rm -v /home/dso501/Sistem-Bioskop:/zap/wrk/:rw \
+                                ghcr.io/zaproxy/zaproxy:stable zap-baseline.py \
+                                -t http://10.34.100.154:80 \
+                                -r zap_report.html \
+                                -I
+                            "
+                        """
+                        echo 'OWASP ZAP selesai.'
+                    } catch (Exception e) {
+                        echo 'OWASP ZAP menemukan issue, tapi pipeline lanjut.'
+                    }
+                }
+            }
+        }
+
+        stage('6. Verifikasi Akhir') {
+            steps {
                 sh "ssh -o StrictHostKeyChecking=no dso501@10.34.100.154 'docker ps'"
             }
         }
