@@ -86,21 +86,21 @@ services:
     networks:
       - secure_app-network
 
-  # nginx-proxy-manager:
-  #   image: jc21/nginx-proxy-manager:latest
-  #   container_name: nginx_proxy_manager
-  #   restart: unless-stopped
-  #   ports:
-  #     - "80:80"
-  #     - "443:443"
-  #     - "81:81"
-  #   volumes:
-  #     - npm_data:/data
-  #     - npm_letsencrypt:/etc/letsencrypt
-  #   environment:
-  #     DB_SQLITE_FILE: "/data/database.sqlite"
-  #   networks:
-  #     - app-network
+  nginx-proxy-manager:
+     image: jc21/nginx-proxy-manager:latest
+     container_name: nginx_proxy_manager
+     restart: unless-stopped
+     ports:
+       - "80:80"
+       - "443:443"
+       - "81:81"
+     volumes:
+       - npm_data:/data
+       - npm_letsencrypt:/etc/letsencrypt
+     environment:
+       DB_SQLITE_FILE: "/data/database.sqlite"
+     networks:
+       - secure_app-network
 
   secure_migrate:
     image: migrate/migrate
@@ -120,6 +120,8 @@ volumes:
   secure_pgdata: {}
   secure_redis-data: {}
   secure_wp_db_data: {}
+  npm_data: {}
+  npm_letsencrypt: {}
   
 networks:
   secure_app-network:
