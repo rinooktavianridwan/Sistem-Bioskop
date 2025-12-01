@@ -1,0 +1,13 @@
+[2025-12-01 07:49:54] This is codeql database analyze codeql-db-go go-security-and-quality.qls --format=csv --output=report-go.csv
+[2025-12-01 07:49:54] Log file was started late.
+[2025-12-01 07:49:54] [PROGRESS] database analyze> Running queries.
+[2025-12-01 07:49:54] Running plumbing command: codeql database run-queries --evaluator-log-level=5 --warnings=show --qlconfig-file=/home/dso501/Sistem-Bioskop/qlconfig.yml --no-rerun --interpret-passthrough=null,--format=csv,-o=/home/dso501/Sistem-Bioskop/report-go.csv,--max-paths=4,--csv-location-format=line-column,--print-diagnostics-summary,--print-metrics-summary,--qlconfig-file=/home/dso501/Sistem-Bioskop/qlconfig.yml,--,/home/dso501/Sistem-Bioskop/codeql-db-go,go-security-and-quality.qls -- /home/dso501/Sistem-Bioskop/codeql-db-go go-security-and-quality.qls
+[2025-12-01 07:49:54] Calling plumbing command: codeql resolve ram --dataset=/home/dso501/Sistem-Bioskop/codeql-db-go/db-go --format=json
+[2025-12-01 07:49:54] [WARN] resolve ram> Stingpool size measured as 3703162
+[2025-12-01 07:49:54] Plumbing command codeql resolve ram completed:
+                      [
+                        "-J-Xmx1411M"
+                      ]
+[2025-12-01 07:49:54] Chaining via /tmp/codeql.ipvpygVh to plumbing: execute queries -J-Xmx1411M --verbosity=progress --logdir=/home/dso501/Sistem-Bioskop/codeql-db-go/log --evaluator-log-level=5 --warnings=show --qlconfig-file=/home/dso501/Sistem-Bioskop/qlconfig.yml --no-rerun --interpret-passthrough=null,--format=csv,-o=/home/dso501/Sistem-Bioskop/report-go.csv,--max-paths=4,--csv-location-format=line-column,--print-diagnostics-summary,--print-metrics-summary,--qlconfig-file=/home/dso501/Sistem-Bioskop/qlconfig.yml,--,/home/dso501/Sistem-Bioskop/codeql-db-go,go-security-and-quality.qls --output=/home/dso501/Sistem-Bioskop/codeql-db-go/results -- /home/dso501/Sistem-Bioskop/codeql-db-go/db-go go-security-and-quality.qls
+[2025-12-01 07:49:54] Plumbing command codeql database run-queries completed with status 70.
+[2025-12-01 07:49:54] Exiting with code 70

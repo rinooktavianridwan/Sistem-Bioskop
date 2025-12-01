@@ -4,36 +4,7 @@ baselineLinesOfCode: 7360
 unicodeNewlines: false
 columnKind: utf8
 primaryLanguage: go
-inProgress:
-  primaryLanguage: go
-  installedExtractors:
-    yaml:
-     - /home/dso501/tools/codeql/yaml
-    javascript:
-     - /home/dso501/tools/codeql/javascript
-    csv:
-     - /home/dso501/tools/codeql/csv
-    cpp:
-     - /home/dso501/tools/codeql/cpp
-    swift:
-     - /home/dso501/tools/codeql/swift
-    properties:
-     - /home/dso501/tools/codeql/properties
-    ruby:
-     - /home/dso501/tools/codeql/ruby
-    html:
-     - /home/dso501/tools/codeql/html
-    python:
-     - /home/dso501/tools/codeql/python
-    csharp:
-     - /home/dso501/tools/codeql/csharp
-    go:
-     - /home/dso501/tools/codeql/go
-    xml:
-     - /home/dso501/tools/codeql/xml
-    java:
-     - /home/dso501/tools/codeql/java
 creationMetadata:
   cliVersion: 2.16.0
-  creationTime: 2025-12-01T07:39:37.707821418Z
-finalised: false
+  creationTime: 2025-12-01T07:48:27.667611463Z
+finalised: true
